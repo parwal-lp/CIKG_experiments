@@ -2,6 +2,7 @@ from z3 import *
 import matplotlib.pyplot as plt
 import torch
 import numpy as np
+from src.train import detectDevice
 
 def draw(arr):
   tens = torch.tensor(arr)
@@ -13,8 +14,9 @@ def draw(arr):
   plt.show()
   print(arr)
 
-def isValid(witness, q, x_vars, device = 'cuda'):
+def isValid(witness, q, x_vars):
     flag = True
+    device = detectDevice()
     witness_values = [witness[x_var].as_long() for x_var in x_vars]
     draw(witness_values)
     for model in q:
@@ -30,7 +32,7 @@ def isValid(witness, q, x_vars, device = 'cuda'):
 def checkSLP(q):
   s = Solver()
 
-  x_vars = [Int(f'x_{i}') for i in range(784)]# crea variabili (una per ogni pixel: 28*28=784)
+  x_vars = [Int(f'x_{i}') for i in range(784)] #create variables (one per each input pixel: 28*28=784)
   for x, i in zip(x_vars, range(len(x_vars))):
     s.add(x >= 0)
     s.add(x <= 255)
@@ -41,11 +43,11 @@ def checkSLP(q):
     W = torch.flatten(W)
     b = b.item()
 
-    expr = Sum([RealVal(W[i].item()) * x_vars[i] for i in range(len(W))]) # combinazione lineare variabili e pesi in W
+    expr = Sum([RealVal(W[i].item()) * x_vars[i] for i in range(len(W))]) # linear combination - perceptron layer
     #print(expr.sexpr())
-    s.add(expr + b >= 0) # formula finale (W*x + b >= 0)
+    s.add(expr + b >= 0) #final inequality for the model (W*x + b >= 0)
 
-  # verifico se è satisfiable, ovvero se esiste una soluzione al sistema di disequazioni
+  # check satisfiability of the inequalities system
   res = s.check()
   print(res)
   if res == sat:
@@ -56,7 +58,7 @@ def checkMLP(q, h_size):
   s = Solver()
   in_size = 28*28
 
-  x_vars = [Int(f'x_{i}') for i in range(in_size)]# crea variabili (una per ogni pixel: 28*28=784)
+  x_vars = [Int(f'x_{i}') for i in range(in_size)] #create variables (one per each input pixel: 28*28=784)
   #s.add(Sum([ x_vars[i] for i in range(in_size)]) >= 20000)
   for x in x_vars:
     s.add(x >= 0)
@@ -72,27 +74,30 @@ def checkMLP(q, h_size):
     b_2 = b_2.item()
 
 
-    # Somma del primo layer (combinazione lineare)
+    # linear combination - first layer
     y1 = []
-    print("codifico primo layer")
+    print("encode first layer")
     for j in range(h_size):
       weighted_sum = Sum([ x_vars[i] * RealVal(W_1[i][j].item()) for i in range(in_size)])
       y1_j = weighted_sum + RealVal(b_1[j].item())
       y1.append(y1_j)
-    print("codifico secondo layer")
-    y2 = [If(y1[j]>0, y1[j], 0) for j in range(h_size)] #relu effettiva
-    #y2 = y1 #salto layer non lineare
-    print("codifico terzo layer")
+
+    # ReLU - second layer
+    print("encode second layer")
+    y2 = [If(y1[j]>0, y1[j], 0) for j in range(h_size)] #relu encoding
+
+    # linear combination - third layer
+    print("encode third layer")
     y3 = Sum([RealVal(W_2[j].item()) * y2[j] for j in range(h_size)]) + RealVal(b_2)
 
+    # add inequality to the system
     s.add(y3 >= 0)
 
-    print("lancio il solver")
+    print("start solver")
     res = s.check()
     print(res)
     if res == sat:
-        print("cerco il witness")
+        print("looking for a witness")
         witness = s.model()
-        witness_values = [witness[x_var].as_long() for x_var in x_vars]
-        isValid(witness_values)
+        isValid(witness, q, x_vars)
   

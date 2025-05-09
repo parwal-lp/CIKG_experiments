@@ -3,7 +3,7 @@ from torchvision import datasets
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor
 from torch.utils.data import Subset
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, recall_score, accuracy_score
 import matplotlib.pyplot as plt
 from src.models import *
 
@@ -15,9 +15,6 @@ def detectDevice():
     else:
         print('No GPU found, using CPU instead.')
         device = torch.device('cpu')
-
-    #print(torch.__version__)
-    #print(torch.version.cuda)
     return device
 
 def setTrainDatasets():
@@ -44,80 +41,67 @@ def setTestDatasets():
 
     return [test_dataset, test_loader, posTests]
 
-def correct(output, target, device='cuda'):
-    predicted_digits = torch.heaviside(output, torch.tensor([1.0]).to(device)) #se output>=0 allora ritorna 1, altrimenti 0
-    correct_ones = (predicted_digits == target).type(torch.float) #vettore con 1 dove la predizione era corretta, 0 dove era sbagliata
-    return correct_ones.sum().item() #conta i corretti
 
-def train(data_loader, model, criterion, optimizer, classNumber, device='cuda'):
+def train(data_loader, model, criterion, optimizer, classNumber, device):
     model.train()
 
     num_batches = len(data_loader)
-    num_items = len(data_loader.dataset)
 
     total_loss = 0
-    total_correct = 0
+
+    all_targets = []
+    all_outputs = []
+
     for data, target in data_loader:
         data = data.to(device)
         target = target.to(device)
-        # converte le label in 1 per il valore scelto e 0 per tutti gli altri valori
         target = (target == classNumber).type(torch.float).reshape(-1, 1)
-        #print("converted label:", target.flatten())
         
-
         output = model(data)
-        #print("prediction: ", output.flatten())
+        binary_output = (output >= 0).type(torch.float).reshape(-1, 1)
+
         loss = criterion(output, target)
         total_loss += loss
 
-        total_correct += correct(output, target)
-        #print("correct: ", correct(output, target))
-        #print("correct: ", total_correct)
+        all_targets.extend(target.cpu().numpy())
+        all_outputs.extend(binary_output.cpu().numpy())
 
         loss.backward()
         optimizer.step()
         optimizer.zero_grad()
 
     train_loss = total_loss/num_batches
-    accuracy = total_correct/num_items
-    print(f"Average loss: {train_loss:7f}, accuracy: {accuracy:.2%}")
+    accuracy = accuracy_score(all_targets, all_outputs)
+    recall = recall_score(all_targets, all_outputs)
+    print(f"Average loss: {train_loss:7f}, accuracy: {accuracy:.2%}, recall: {recall}")
 
-def test(test_loader, model, classNumber, device='cuda'):
+def test(test_loader, model, classNumber, device):
     model.eval()
 
-    num_batches = len(test_loader)
-    num_items = len(test_loader.dataset)
-
-    test_loss = 0
-    total_correct = 0
-
-    pos_weight = torch.tensor([9.0]).to(device)
-    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+    all_targets = []
+    all_outputs = []
 
     with torch.no_grad():
         for data, target in test_loader:
-            # Copy data and targets to GPU
             data = data.to(device)
             target = target.to(device)
             target = (target == classNumber).type(torch.float).reshape(-1, 1)
 
             # Do a forward pass
             output = model(data)
-
-            # Calculate the loss
-            loss = criterion(output, target)
-            test_loss += loss.item()
+            output = (output >= 0).type(torch.float).reshape(-1, 1)
 
             # Count number of correct digits
-            total_correct += correct(output, target)
+            all_targets.extend(target.cpu().numpy())
+            all_outputs.extend(output.cpu().numpy())
 
-    test_loss = test_loss/num_batches
-    accuracy = total_correct/num_items
+    accuracy = accuracy_score(all_targets, all_outputs)
+    recall = recall_score(all_targets, all_outputs)
 
-    print(f"Testset accuracy: {100*accuracy:>0.1f}%, average loss: {test_loss:>7f}")
+    print(f"accuracy: {accuracy}, recall: {recall}")
 
 
-def plot_confusion_matrix(model, data_loader, classNumber, device='cuda'):
+def plot_confusion_matrix(model, data_loader, classNumber, device):
     model.to(device)
     model.eval()
 
@@ -143,7 +127,7 @@ def plot_confusion_matrix(model, data_loader, classNumber, device='cuda'):
     plt.show()
 
 
-def trainModels(modelType, train_loader, test_loader, device='cuda'):
+def trainModels(modelType, train_loader, device):
     models = []
     criterions = []
     optimizers = []
@@ -169,16 +153,14 @@ def trainModels(modelType, train_loader, test_loader, device='cuda'):
       print(f"----------------------Training {modelType} classifier for {i}----------------------------")
       for epoch in range(epochs):
           print(f"Training epoch: {epoch+1}")
-          train(train_loader, models[i], criterions[i], optimizers[i], i)
-      #test(test_loader, models[i], criterions[i], i)
-      #plot_confusion_matrix(models[i], test_loader, i)
+          train(train_loader, models[i], criterions[i], optimizers[i], i, device)
 
     for i in range(len(models)):
         torch.save(models[i].state_dict(), f'./models/{modelType}/model_{i}')
 
     return models
 
-def loadModels(modelType, device='cuda'):
+def loadModels(modelType, device):
     models = []
     for i in range(10):
       if modelType=='SLP':
@@ -193,8 +175,8 @@ def loadModels(modelType, device='cuda'):
         print(f"loaded classifier model for {i}")
     return models
 
-def testModels(models, test_loader):
+def testModels(models, test_loader, device):
     for i in range(len(models)):
       print(f"summary classifier model for {i}")
-      test(test_loader, models[i], i)
-      #plot_confusion_matrix(models[i], test_loader, i)
+      test(test_loader, models[i], i, device)
+      plot_confusion_matrix(models[i], test_loader, i, device)
