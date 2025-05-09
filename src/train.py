@@ -99,6 +99,7 @@ def test(test_loader, model, classNumber, device):
     recall = recall_score(all_targets, all_outputs)
 
     print(f"accuracy: {accuracy}, recall: {recall}")
+    return [accuracy, recall]
 
 
 def plot_confusion_matrix(model, data_loader, classNumber, device):
@@ -176,7 +177,12 @@ def loadModels(modelType, device):
     return models
 
 def testModels(models, test_loader, device):
+    tot_acc = 0
+    tot_rec = 0
     for i in range(len(models)):
       print(f"summary classifier model for {i}")
-      test(test_loader, models[i], i, device)
+      acc, rec = test(test_loader, models[i], i, device)
       plot_confusion_matrix(models[i], test_loader, i, device)
+      tot_acc += acc
+      tot_rec += rec
+    print(f"Average accuracy: {tot_acc/len(models)}, Average recall: {tot_rec/len(models)}")

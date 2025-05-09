@@ -1,5 +1,4 @@
 from src.train import *
-from src.solver import *
 
 #detect available device: CPU or GPU
 device = detectDevice()
