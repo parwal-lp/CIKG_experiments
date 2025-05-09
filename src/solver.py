@@ -29,7 +29,7 @@ def isValid(witness, q, x_vars):
     if flag==True:
         print("Istanza positiva di q!")
 
-def checkSLP(q):
+def checkSLP(q, needWitness=True):
   s = Solver()
 
   x_vars = [Int(f'x_{i}') for i in range(784)] #create variables (one per each input pixel: 28*28=784)
@@ -50,7 +50,7 @@ def checkSLP(q):
   # check satisfiability of the inequalities system
   res = s.check()
   print(res)
-  if res == sat:
+  if res == sat and needWitness == True:
       witness = s.model()
       isValid(witness, q, x_vars)
   
