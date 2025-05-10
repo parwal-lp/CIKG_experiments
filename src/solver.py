@@ -29,7 +29,7 @@ def isValid(witness, q, x_vars):
     if flag==True:
         print("Istanza positiva di q!")
 
-def checkSLP(q, needWitness=True):
+def checkSLP(q, incT=[], disjT=[], needWitness=True):
   s = Solver()
 
   x_vars = [Int(f'x_{i}') for i in range(784)] #create variables (one per each input pixel: 28*28=784)
@@ -48,6 +48,22 @@ def checkSLP(q, needWitness=True):
     s.add(expr + b >= 0) #final inequality for the model (W*x + b >= 0)
 
   # check satisfiability of the inequalities system
+  for t in incT:
+    W = list(t.parameters())[0].data
+    b = list(t.parameters())[1].data
+    W = torch.flatten(W)
+    b = b.item()
+    expr = Sum([RealVal(W[i].item()) * x_vars[i] for i in range(len(W))]) # linear combination - perceptron layer
+    s.add(expr + b >= 0) #final inequality for the model (W*x + b >= 0)
+
+  for t in disjT:
+    W = list(t.parameters())[0].data
+    b = list(t.parameters())[1].data
+    W = torch.flatten(W)
+    b = b.item()
+    expr = Sum([RealVal(W[i].item()) * x_vars[i] for i in range(len(W))]) # linear combination - perceptron layer
+    s.add(expr + b < 0) #final inequality for the model (W*x + b >= 0)
+
   res = s.check()
   print(res)
   if res == sat and needWitness == True:

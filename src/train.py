@@ -55,7 +55,10 @@ def train(data_loader, model, criterion, optimizer, classNumber, device):
     for data, target in data_loader:
         data = data.to(device)
         target = target.to(device)
-        target = (target == classNumber).type(torch.float).reshape(-1, 1)
+        if type(classNumber) == list:
+            target = torch.isin(target, torch.tensor(classNumber).to(device)).float().reshape(-1, 1)
+        else:
+            target = (target == classNumber).type(torch.float).reshape(-1, 1)
         
         output = model(data)
         binary_output = (output >= 0).type(torch.float).reshape(-1, 1)
@@ -85,7 +88,10 @@ def test(test_loader, model, classNumber, device):
         for data, target in test_loader:
             data = data.to(device)
             target = target.to(device)
-            target = (target == classNumber).type(torch.float).reshape(-1, 1)
+            if type(classNumber) == list:
+                target = torch.isin(target, torch.tensor(classNumber).to(device)).float()
+            else:
+                target = (target == classNumber).type(torch.float).reshape(-1, 1)
 
             # Do a forward pass
             output = model(data)
@@ -114,7 +120,12 @@ def plot_confusion_matrix(model, data_loader, classNumber, device):
             images = images.to(device)
             labels = labels.to(device)
 
-            binary_labels = (labels == classNumber).int()
+            if type(classNumber) == list:
+                binary_labels = torch.isin(labels, torch.tensor(classNumber).to(device)).int()
+                #binary_labels = (labels in classNumber).int()
+            else:
+                binary_labels = (labels == classNumber).int()
+            
             outputs = model(images).view(-1)
             preds = (outputs >= 0).int()
 
@@ -186,3 +197,22 @@ def testModels(models, test_loader, device):
       tot_acc += acc
       tot_rec += rec
     print(f"Average accuracy: {tot_acc/len(models)}, Average recall: {tot_rec/len(models)}")
+
+def trainMultinumClassifier(modelType, train_loader, classNumbers, device):
+    if modelType=='SLP':
+        model = SimpleSLP().to(device)
+    elif modelType=='MLP':
+        model = SimpleMLP().to(device)
+    else:
+        print("unknown model required")
+    criterion = nn.BCEWithLogitsLoss()
+    optimizer = torch.optim.Adam(model.parameters())
+
+    epochs = 10
+    for epoch in range(epochs):
+        print(f"Training epoch: {epoch+1}")
+        train(train_loader, model, criterion, optimizer, classNumbers, device)
+
+    torch.save(model.state_dict(), f'./models/{modelType}/model_{str(classNumbers)}')
+
+    return model
