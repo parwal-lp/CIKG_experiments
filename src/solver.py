@@ -28,6 +28,28 @@ def isValid(witness, q, x_vars):
             flag = False
     if flag==True:
         print("Istanza positiva di q!")
+  
+def isValidWithNeg(witness, qPos, qNeg, x_vars):
+    flag = True
+    device = detectDevice()
+    witness_values = [witness[x_var].as_long() for x_var in x_vars]
+    draw(witness_values)
+    for model in qPos:
+        out = model(torch.FloatTensor(witness_values).to(device))
+        print("il classificatore dice:", out)
+        prediction = torch.heaviside(out, torch.tensor([1.0]).to(device))
+        if prediction==0:
+            print("Non è istanza positiva del modello")
+            flag = False
+    for model in qNeg:
+        out = model(torch.FloatTensor(witness_values).to(device))
+        print("il classificatore dice:", out)
+        prediction = torch.heaviside(out, torch.tensor([1.0]).to(device))
+        if prediction==1:
+            print("istanza positiva del modello")
+            flag = False
+    if flag==True:
+        print("Istanza positiva di q!")
 
 def checkSLP(q, incT=[], disjT=[], needWitness=True):
   s = Solver()
@@ -48,27 +70,107 @@ def checkSLP(q, incT=[], disjT=[], needWitness=True):
     s.add(expr + b >= 0) #final inequality for the model (W*x + b >= 0)
 
   # check satisfiability of the inequalities system
-  for t in incT:
-    W = list(t.parameters())[0].data
-    b = list(t.parameters())[1].data
-    W = torch.flatten(W)
-    b = b.item()
-    expr = Sum([RealVal(W[i].item()) * x_vars[i] for i in range(len(W))]) # linear combination - perceptron layer
-    s.add(expr + b >= 0) #final inequality for the model (W*x + b >= 0)
+  for (t1, t2) in incT:
+      W2 = list(t2.parameters())[0].data
+      b2 = list(t2.parameters())[1].data
+      W2 = torch.flatten(W)
+      b2 = b2.item()
+      expr2 = Sum([RealVal(W2[i].item()) * x_vars[i] for i in range(len(W2))]) # linear combination
 
-  for t in disjT:
-    W = list(t.parameters())[0].data
-    b = list(t.parameters())[1].data
-    W = torch.flatten(W)
-    b = b.item()
-    expr = Sum([RealVal(W[i].item()) * x_vars[i] for i in range(len(W))]) # linear combination - perceptron layer
-    s.add(expr + b < 0) #final inequality for the model (W*x + b >= 0)
+      W1 = list(t1.parameters())[0].data
+      b1 = list(t1.parameters())[1].data
+      W1 = torch.flatten(W)
+      b1 = b1.item()
+      expr1 = Sum([RealVal(W1[i].item()) * x_vars[i] for i in range(len(W1))]) # linear combination
+
+      s.add(Implies(expr1 + b1 >= 0, expr2 + b2 >= 0))
+
+  for (t1, t2) in disjT:
+      W2 = list(t2.parameters())[0].data
+      b2 = list(t2.parameters())[1].data
+      W2 = torch.flatten(W)
+      b2 = b2.item()
+      expr2 = Sum([RealVal(W2[i].item()) * x_vars[i] for i in range(len(W2))]) # linear combination
+
+      W1 = list(t1.parameters())[0].data
+      b1 = list(t1.parameters())[1].data
+      W1 = torch.flatten(W)
+      b1 = b1.item()
+      expr1 = Sum([RealVal(W1[i].item()) * x_vars[i] for i in range(len(W1))]) # linear combination
+      
+      s.add(Implies(expr1 + b1 >= 0, expr2 + b2 < 0))
 
   res = s.check()
   print(res)
   if res == sat and needWitness == True:
       witness = s.model()
       isValid(witness, q, x_vars)
+
+
+def checkSLPwithNeg(qPos, qNeg=[], incT=[], disjT=[], needWitness=True):
+  s = Solver()
+
+  x_vars = [Int(f'x_{i}') for i in range(784)] #create variables (one per each input pixel: 28*28=784)
+  for x in x_vars:
+    s.add(x >= 0)
+    s.add(x <= 255)
+  #s.add(Sum([x_vars[i] for i in range(len(x_vars))]) > 50000)
+  for model in qPos:
+    W = list(model.parameters())[0].data
+    b = list(model.parameters())[1].data
+    W = torch.flatten(W)
+    b = b.item()
+
+    expr = Sum([RealVal(W[i].item()) * x_vars[i] for i in range(len(W))]) # linear combination - perceptron layer
+    #print(expr.sexpr())
+    s.add(expr + b >= 0) #final inequality for the model (W*x + b >= 0)
+
+  for model in qNeg:
+    W = list(model.parameters())[0].data
+    b = list(model.parameters())[1].data
+    W = torch.flatten(W)
+    b = b.item()
+
+    expr = Sum([RealVal(W[i].item()) * x_vars[i] for i in range(len(W))]) # linear combination - perceptron layer
+    #print(expr.sexpr())
+    s.add(expr + b < 0) #final inequality for the model (W*x + b >= 0)
+
+  # check satisfiability of the inequalities system
+  for (t1, t2) in incT:
+      W2 = list(t2.parameters())[0].data
+      b2 = list(t2.parameters())[1].data
+      W2 = torch.flatten(W)
+      b2 = b2.item()
+      expr2 = Sum([RealVal(W2[i].item()) * x_vars[i] for i in range(len(W2))]) # linear combination
+
+      W1 = list(t1.parameters())[0].data
+      b1 = list(t1.parameters())[1].data
+      W1 = torch.flatten(W)
+      b1 = b1.item()
+      expr1 = Sum([RealVal(W1[i].item()) * x_vars[i] for i in range(len(W1))]) # linear combination
+
+      s.add(Implies(expr1 + b1 >= 0, expr2 + b2 >= 0))
+
+  for (t1, t2) in disjT:
+      W2 = list(t2.parameters())[0].data
+      b2 = list(t2.parameters())[1].data
+      W2 = torch.flatten(W)
+      b2 = b2.item()
+      expr2 = Sum([RealVal(W2[i].item()) * x_vars[i] for i in range(len(W2))]) # linear combination
+
+      W1 = list(t1.parameters())[0].data
+      b1 = list(t1.parameters())[1].data
+      W1 = torch.flatten(W)
+      b1 = b1.item()
+      expr1 = Sum([RealVal(W1[i].item()) * x_vars[i] for i in range(len(W1))]) # linear combination
+      
+      s.add(Implies(expr1 + b1 >= 0, expr2 + b2 < 0))
+
+  res = s.check()
+  print(res)
+  if res == sat and needWitness == True:
+      witness = s.model()
+      isValidWithNeg(witness, qPos, qNeg, x_vars)
   
 def checkMLP(q, h_size):
   s = Solver()
