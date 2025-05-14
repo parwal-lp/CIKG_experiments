@@ -139,31 +139,31 @@ def checkSLPwithNeg(qPos, qNeg=[], incT=[], disjT=[], needWitness=True):
   for (t1, t2) in incT:
       W2 = list(t2.parameters())[0].data
       b2 = list(t2.parameters())[1].data
-      W2 = torch.flatten(W)
+      W2 = torch.flatten(W2)
       b2 = b2.item()
       expr2 = Sum([RealVal(W2[i].item()) * x_vars[i] for i in range(len(W2))]) # linear combination
 
       W1 = list(t1.parameters())[0].data
       b1 = list(t1.parameters())[1].data
-      W1 = torch.flatten(W)
+      W1 = torch.flatten(W1)
       b1 = b1.item()
       expr1 = Sum([RealVal(W1[i].item()) * x_vars[i] for i in range(len(W1))]) # linear combination
-
+      #s.add(Or(expr1 + b1 < 0, expr2 + b2 >= 0))
       s.add(Implies(expr1 + b1 >= 0, expr2 + b2 >= 0))
 
   for (t1, t2) in disjT:
       W2 = list(t2.parameters())[0].data
       b2 = list(t2.parameters())[1].data
-      W2 = torch.flatten(W)
+      W2 = torch.flatten(W2)
       b2 = b2.item()
       expr2 = Sum([RealVal(W2[i].item()) * x_vars[i] for i in range(len(W2))]) # linear combination
 
       W1 = list(t1.parameters())[0].data
       b1 = list(t1.parameters())[1].data
-      W1 = torch.flatten(W)
+      W1 = torch.flatten(W1)
       b1 = b1.item()
       expr1 = Sum([RealVal(W1[i].item()) * x_vars[i] for i in range(len(W1))]) # linear combination
-      
+      #s.add(Or(expr1 + b1 < 0, expr2 + b2 < 0))
       s.add(Implies(expr1 + b1 >= 0, expr2 + b2 < 0))
 
   res = s.check()
