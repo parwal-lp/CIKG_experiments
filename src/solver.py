@@ -21,13 +21,13 @@ def isValid(witness, q, x_vars):
     draw(witness_values)
     for model in q:
         out = model(torch.FloatTensor(witness_values).to(device))
-        print("il classificatore dice:", out)
+        print("classifier outputs:", out)
         prediction = torch.heaviside(out, torch.tensor([1.0]).to(device))
         if prediction==0:
-            print("Non è istanza positiva del modello")
+            print("doesn't satisfy the classifier")
             flag = False
     if flag==True:
-        print("Istanza positiva di q!")
+        print("Satisfies q!")
   
 def isValidWithNeg(witness, qPos, qNeg, x_vars):
     flag = True
@@ -36,20 +36,20 @@ def isValidWithNeg(witness, qPos, qNeg, x_vars):
     draw(witness_values)
     for model in qPos:
         out = model(torch.FloatTensor(witness_values).to(device))
-        print("il classificatore dice:", out)
+        print("classifier outputs:", out)
         prediction = torch.heaviside(out, torch.tensor([1.0]).to(device))
         if prediction==0:
-            print("Non è istanza positiva del modello")
+            print("doesn't satisfy the classifier")
             flag = False
     for model in qNeg:
         out = model(torch.FloatTensor(witness_values).to(device))
-        print("il classificatore dice:", out)
+        print("classifier outputs:", out)
         prediction = torch.heaviside(out, torch.tensor([1.0]).to(device))
         if prediction==1:
-            print("istanza positiva del modello")
+            print("satisfies the classifier")
             flag = False
     if flag==True:
-        print("Istanza positiva di q!")
+        print("Satisfies q!")
 
 def checkSLP(q, incT=[], disjT=[], needWitness=True):
   s = Solver()

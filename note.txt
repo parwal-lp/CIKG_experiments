@@ -489,3 +489,47 @@ Elapsed time for tuple 45/45: 10.435421228408813
 avarage time for a query of len 6 : 8.030890056822034
 ----- test for queries of length 7 ------
 number of tests: 120
+
+
+QueryLen 1, NumAxioms 0: Avg time = 0.1411s
+QueryLen 1, NumAxioms 1: Avg time = 0.2565s
+QueryLen 1, NumAxioms 2: Avg time = 0.4574s
+QueryLen 1, NumAxioms 3: Avg time = 0.7810s
+QueryLen 1, NumAxioms 4: Avg time = 0.9379s
+QueryLen 1, NumAxioms 5: Avg time = 1.1183s
+QueryLen 1, NumAxioms 6: Avg time = 1.2807s
+QueryLen 2, NumAxioms 0: Avg time = 0.3379s
+QueryLen 2, NumAxioms 1: Avg time = 0.5057s
+QueryLen 2, NumAxioms 2: Avg time = 0.7244s
+QueryLen 2, NumAxioms 3: Avg time = 0.9872s
+QueryLen 2, NumAxioms 4: Avg time = 1.0531s
+QueryLen 2, NumAxioms 5: Avg time = 1.2771s
+QueryLen 2, NumAxioms 6: Avg time = 1.5506s
+QueryLen 3, NumAxioms 0: Avg time = 0.6154s
+QueryLen 3, NumAxioms 1: Avg time = 0.7315s
+QueryLen 3, NumAxioms 2: Avg time = 0.9949s
+QueryLen 3, NumAxioms 3: Avg time = 1.1064s
+QueryLen 3, NumAxioms 4: Avg time = 1.2759s
+QueryLen 3, NumAxioms 5: Avg time = 1.4191s
+QueryLen 3, NumAxioms 6: Avg time = 1.7244s
+QueryLen 4, NumAxioms 0: Avg time = 1.4274s
+QueryLen 4, NumAxioms 1: Avg time = 1.3677s
+QueryLen 4, NumAxioms 2: Avg time = 1.3482s
+QueryLen 4, NumAxioms 3: Avg time = 1.6324s
+QueryLen 4, NumAxioms 4: Avg time = 1.7507s
+QueryLen 4, NumAxioms 5: Avg time = 2.1594s
+QueryLen 4, NumAxioms 6: Avg time = 2.6134s
+QueryLen 5, NumAxioms 0: Avg time = 3.5757s
+QueryLen 5, NumAxioms 1: Avg time = 3.7489s
+QueryLen 5, NumAxioms 2: Avg time = 6.2909s
+QueryLen 5, NumAxioms 3: Avg time = 4.5199s
+QueryLen 5, NumAxioms 4: Avg time = 4.1305s
+QueryLen 5, NumAxioms 5: Avg time = 4.4357s
+QueryLen 5, NumAxioms 6: Avg time = 6.5295s
+QueryLen 6, NumAxioms 0: Avg time = 2.6827s
+QueryLen 6, NumAxioms 1: Avg time = 2.3562s
+QueryLen 6, NumAxioms 2: Avg time = 2.7007s
+QueryLen 6, NumAxioms 3: Avg time = 3.9280s
+QueryLen 6, NumAxioms 4: Avg time = 5.1543s
+QueryLen 6, NumAxioms 5: Avg time = 4.6022s
+QueryLen 6, NumAxioms 6: Avg time = 5.5492s
