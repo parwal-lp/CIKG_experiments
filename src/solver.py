@@ -58,7 +58,7 @@ def checkSLP(q, incT=[], disjT=[], needWitness=True):
   for x, i in zip(x_vars, range(len(x_vars))):
     s.add(x >= 0)
     s.add(x <= 255)
-  #s.add(Sum([x_vars[i] for i in range(len(x_vars))]) > 50000)
+  #s.add(Sum([x_vars[i] for i in range(len(x_vars))]) > 50000) #set magnitude
   for model, i in zip(q, range(len(q))):
     W = list(model.parameters())[0].data
     b = list(model.parameters())[1].data
@@ -75,13 +75,13 @@ def checkSLP(q, incT=[], disjT=[], needWitness=True):
       b2 = list(t2.parameters())[1].data
       W2 = torch.flatten(W)
       b2 = b2.item()
-      expr2 = Sum([RealVal(W2[i].item()) * x_vars[i] for i in range(len(W2))]) # linear combination
+      expr2 = Sum([RealVal(W2[i].item()) * x_vars[i] for i in range(len(W2))]) #linear combination
 
       W1 = list(t1.parameters())[0].data
       b1 = list(t1.parameters())[1].data
       W1 = torch.flatten(W)
       b1 = b1.item()
-      expr1 = Sum([RealVal(W1[i].item()) * x_vars[i] for i in range(len(W1))]) # linear combination
+      expr1 = Sum([RealVal(W1[i].item()) * x_vars[i] for i in range(len(W1))]) #linear combination
 
       s.add(Implies(expr1 + b1 >= 0, expr2 + b2 >= 0))
 
@@ -90,21 +90,22 @@ def checkSLP(q, incT=[], disjT=[], needWitness=True):
       b2 = list(t2.parameters())[1].data
       W2 = torch.flatten(W)
       b2 = b2.item()
-      expr2 = Sum([RealVal(W2[i].item()) * x_vars[i] for i in range(len(W2))]) # linear combination
+      expr2 = Sum([RealVal(W2[i].item()) * x_vars[i] for i in range(len(W2))]) #linear combination
 
       W1 = list(t1.parameters())[0].data
       b1 = list(t1.parameters())[1].data
       W1 = torch.flatten(W)
       b1 = b1.item()
-      expr1 = Sum([RealVal(W1[i].item()) * x_vars[i] for i in range(len(W1))]) # linear combination
+      expr1 = Sum([RealVal(W1[i].item()) * x_vars[i] for i in range(len(W1))]) #linear combination
       
       s.add(Implies(expr1 + b1 >= 0, expr2 + b2 < 0))
 
+  #s now contains the SMT encoding of the problem instance
   res = s.check()
   print(res)
   if res == sat and needWitness == True:
       witness = s.model()
-      isValid(witness, q, x_vars)
+      #isValid(witness, q, x_vars)
 
 
 def checkSLPwithNeg(qPos, qNeg=[], incT=[], disjT=[], needWitness=True):
