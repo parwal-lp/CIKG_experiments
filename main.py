@@ -13,7 +13,7 @@ def getModels(modelType, testFlag=False):
     if(testFlag): testModels(SLPmodels, test_loader, device)
 
     SLPeven = SimpleSLP().to(device)
-    SLPeven.load_state_dict(torch.load(f'./models/SLP/model_[0, 2, 4, 6, 8]', weights_only=True))
+    SLPeven.load_state_dict(torch.load(f'./models/SLP/model_[0, 2, 4, 6, 8]', weights_only=True, map_location=device))
     if(testFlag): 
         [test_dataset, test_loader, posTests] = setTestDatasets()
         test(test_loader, SLPeven, [2,4,6,8], device)
