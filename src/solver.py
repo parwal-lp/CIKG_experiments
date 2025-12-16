@@ -33,7 +33,7 @@ def isValidWithNeg(witness, qPos, qNeg, x_vars):
     flag = True
     device = detectDevice()
     witness_values = [witness[x_var].as_long() for x_var in x_vars]
-    draw(witness_values)
+    # draw(witness_values)
     for model in qPos:
         out = model(torch.FloatTensor(witness_values).to(device))
         print("classifier outputs:", out)
@@ -58,7 +58,7 @@ def checkSLP(q, incT=[], disjT=[], needWitness=True):
   for x, i in zip(x_vars, range(len(x_vars))):
     s.add(x >= 0)
     s.add(x <= 255)
-  #s.add(Sum([x_vars[i] for i in range(len(x_vars))]) > 50000) #set magnitude
+  #s.add(Sum([x_vars[i] for i in range(len(x_vars))]) > 50) #set magnitude
   for model, i in zip(q, range(len(q))):
     W = list(model.parameters())[0].data
     b = list(model.parameters())[1].data
@@ -108,14 +108,14 @@ def checkSLP(q, incT=[], disjT=[], needWitness=True):
       #isValid(witness, q, x_vars)
 
 
-def checkSLPwithNeg(qPos, qNeg=[], incT=[], disjT=[], needWitness=True):
+def checkSLPwithNeg(qPos, qNeg=[], incT=[], disjT=[], needWitness=True, magnitude = 0):
   s = Solver()
 
   x_vars = [Int(f'x_{i}') for i in range(784)] #create variables (one per each input pixel: 28*28=784)
   for x in x_vars:
     s.add(x >= 0)
     s.add(x <= 255)
-  #s.add(Sum([x_vars[i] for i in range(len(x_vars))]) > 50000)
+  if (magnitude>0): s.add(Sum([x_vars[i] for i in range(len(x_vars))]) > magnitude) #magnitude per forzare non-trivial solutions
   for model in qPos:
     W = list(model.parameters())[0].data
     b = list(model.parameters())[1].data
