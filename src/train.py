@@ -183,7 +183,7 @@ def loadModels(modelType, device):
           print("unknown model required")
       models.append(model)
     for i in range(10):
-        models[i].load_state_dict(torch.load(f'./models/{modelType}/model_{i}', weights_only=True))
+        models[i].load_state_dict(torch.load(f'./models/{modelType}/model_{i}', weights_only=True, map_location=device))
         print(f"loaded classifier model for {i}")
     return models
 

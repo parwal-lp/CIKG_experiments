@@ -77,7 +77,7 @@ def main():
     
     #chiamo solver
     start_time = time.time()
-    checkSLPwithNeg(posConcepts, negConcepts, inclAxioms, disjAxioms, needWitness=True, magnitude=50)
+    checkSLPwithNeg(posConcepts, negConcepts, inclAxioms, disjAxioms, needWitness=True, magnitude=0)
     end_time = time.time()
 
     #riporto tempistiche del solver
