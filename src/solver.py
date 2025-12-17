@@ -204,6 +204,7 @@ def checkSLPwithNeg(qPos, qNeg=[], incT=[], disjT=[], needWitness=True, magnitud
       print (witness)
       #isValidWithNeg(witness, qPos, qNeg, x_vars)
   else:
+    print("start solver")
     res = s.check()
     print(res)
     if res == sat and needWitness == True:
@@ -281,6 +282,7 @@ def checkMLP(q, h_size, needWitness=True, magnitude = 0, withTactics=False):
       print (witness)
       #isValidWithNeg(witness, qPos, qNeg, x_vars)
   else:
+    print("start solver")
     res = s.check()
     print(res)
     if res == sat and needWitness == True:
