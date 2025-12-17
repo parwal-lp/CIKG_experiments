@@ -76,6 +76,7 @@ def main():
     negConcepts = []
     
     #chiamo solver
+    configureSolver()
     start_time = time.time()
     checkSLPwithNeg(posConcepts, negConcepts, inclAxioms, disjAxioms, needWitness=True, magnitude=50)
     end_time = time.time()

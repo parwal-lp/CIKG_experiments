@@ -3,6 +3,17 @@ import matplotlib.pyplot as plt
 import torch
 import numpy as np
 from src.train import detectDevice
+from dotenv import load_dotenv
+
+def configureSolver():
+   load_dotenv()
+   is_enabled = bool(os.getenv('Z3_PARALLEL', False))
+   n_threads = int(os.getenv('Z3_THREADS', 1))
+   z3.set_param('parallel.enable', is_enabled)
+   z3.set_param('parallel.threads.max', n_threads)
+   z3.set_param('smt.threads', n_threads)
+   z3.set_param('sat.threads', n_threads)
+   print(f"Z3 running on {n_threads} threads, parallel mode is {'enabled' if is_enabled else 'disabled'}.")
 
 def draw(arr):
   tens = torch.tensor(arr)
@@ -52,7 +63,6 @@ def isValidWithNeg(witness, qPos, qNeg, x_vars):
         print("Satisfies q!")
 
 def checkSLP(q, incT=[], disjT=[], needWitness=True):
-  z3.set_param('parallel.enable', True)
   s = Solver()
 
   x_vars = [Int(f'x_{i}') for i in range(784)] #create variables (one per each input pixel: 28*28=784)
@@ -110,9 +120,6 @@ def checkSLP(q, incT=[], disjT=[], needWitness=True):
 
 
 def checkSLPwithNeg(qPos, qNeg=[], incT=[], disjT=[], needWitness=True, magnitude = 0):
-  z3.set_param('parallel.enable', True)
-  z3.set_param('parallel.threads.max', 4)
-  z3.set_param('smt.threads', 4)
   s = Solver()
 
   x_vars = [Int(f'x_{i}') for i in range(784)] #create variables (one per each input pixel: 28*28=784)
@@ -178,7 +185,6 @@ def checkSLPwithNeg(qPos, qNeg=[], incT=[], disjT=[], needWitness=True, magnitud
       isValidWithNeg(witness, qPos, qNeg, x_vars)
   
 def checkMLP(q, h_size):
-  z3.set_param('parallel.enable', True)
   s = Solver()
   in_size = 28*28
 
