@@ -86,20 +86,21 @@ def stressTest(SLPmodels):
 #     print(f"Execution time: {elapsed:.4f}s")
 def main():
     #carico modelli
-    MLPmodels, _ = getModels(modelType='MLP', testFlag=False)
+    models, _ = getModels(modelType='SLP', testFlag=False)
 
     #definisco ontologia
     inclAxioms = []
-    disjAxioms = [(MLPmodels[2], MLPmodels[3])]
+    disjAxioms = [(models[2], models[3])]
 
     #definisco query
-    posConcepts = [MLPmodels[1], MLPmodels[2]]
+    posConcepts = [models[1], models[2]]
     negConcepts = []
     
     #chiamo solver
     configureSolver()
     start_time = time.time()
-    checkMLP(posConcepts, h_size=16, needWitness=True, magnitude=0)
+    # checkMLP(posConcepts, h_size=16, needWitness=True, magnitude=0)
+    checkSLPwithNeg(posConcepts, negConcepts, inclAxioms, disjAxioms, needWitness=True, magnitude=0, withTactics=True)
     end_time = time.time()
 
     #riporto tempistiche del solver

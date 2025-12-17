@@ -119,8 +119,12 @@ def checkSLP(q, incT=[], disjT=[], needWitness=True):
       #isValid(witness, q, x_vars)
 
 
-def checkSLPwithNeg(qPos, qNeg=[], incT=[], disjT=[], needWitness=True, magnitude = 0):
-  s = Solver()
+def checkSLPwithNeg(qPos, qNeg=[], incT=[], disjT=[], needWitness=True, magnitude = 0, withTactics=False):
+  if withTactics==True:
+    print("using tactics")
+    s = Goal()
+  else:
+    s = Solver()
 
   x_vars = [Int(f'x_{i}') for i in range(784)] #create variables (one per each input pixel: 28*28=784)
   for x in x_vars:
@@ -178,21 +182,52 @@ def checkSLPwithNeg(qPos, qNeg=[], incT=[], disjT=[], needWitness=True, magnitud
       #s.add(Or(expr1 + b1 < 0, expr2 + b2 < 0))
       s.add(Implies(expr1 + b1 >= 0, expr2 + b2 < 0))
 
-  res = s.check()
-  print(res)
-  if res == sat and needWitness == True:
+  if withTactics==True:
+    t1 = Tactic('simplify')
+    t2 = Tactic('solve-eqs')
+    t  = Then(t1, t2)
+    r = t(s)
+    print("result from tactics:")
+    print (r)
+
+    sol = Solver()
+    sol.add(r[0])
+    print("start solver")
+    res = sol.check()
+    print(res)
+    
+    # print("Model for the original goal:")
+    # print (r.convert_model(sol.model())) #buggato anche se in documentazione viene detto di usarlo così, va in errore
+    if res == sat and needWitness == True:
+      print("Model for the subgoal (witness):")
+      witness = sol.model()
+      print (witness)
+      #isValidWithNeg(witness, qPos, qNeg, x_vars)
+  else:
+    res = s.check()
+    print(res)
+    if res == sat and needWitness == True:
+      print("Model (witness):")
       witness = s.model()
-      isValidWithNeg(witness, qPos, qNeg, x_vars)
+      print(witness)
+      #isValidWithNeg(witness, qPos, qNeg, x_vars)
+
+
   
-def checkMLP(q, h_size, needWitness=True, magnitude = 0):
-  s = Solver()
+def checkMLP(q, h_size, needWitness=True, magnitude = 0, withTactics=False):
+  if withTactics==True:
+    print("using tactics")
+    s = Goal()
+  else:
+    s = Solver()
+  
   in_size = 28*28
 
   x_vars = [Int(f'x_{i}') for i in range(in_size)] #create variables (one per each input pixel: 28*28=784)
   #s.add(Sum([ x_vars[i] for i in range(in_size)]) >= 20000)
   for x in x_vars:
     s.add(x >= 0)
-    s.add(x <= 255)
+    s.add(x <= 1)
   if (magnitude>0): s.add(Sum([x_vars[i] for i in range(len(x_vars))]) > magnitude) #magnitude per forzare non-trivial solutions
 
   for model in q:
@@ -223,12 +258,33 @@ def checkMLP(q, h_size, needWitness=True, magnitude = 0):
 
     # add inequality to the system
     s.add(y3 >= 0)
+  
+  if withTactics==True:
+    t1 = Tactic('simplify')
+    t2 = Tactic('solve-eqs')
+    t  = Then(t1, t2)
+    r = t(s)
+    print("result from tactics:")
+    print (r)
 
+    sol = Solver()
+    sol.add(r[0])
     print("start solver")
+    res = sol.check()
+    print(res)
+    
+    # print("Model for the original goal:")
+    # print (r.convert_model(sol.model())) #buggato anche se in documentazione viene detto di usarlo così, va in errore
+    if res == sat and needWitness == True:
+      print("Model for the subgoal (witness):")
+      witness = sol.model()
+      print (witness)
+      #isValidWithNeg(witness, qPos, qNeg, x_vars)
+  else:
     res = s.check()
     print(res)
     if res == sat and needWitness == True:
-        print("looking for a witness")
-        witness = s.model()
-        isValid(witness, q, x_vars)
-  
+      print("Model (witness):")
+      witness = s.model()
+      print(witness)
+      #isValidWithNeg(witness, qPos, qNeg, x_vars)
