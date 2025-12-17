@@ -52,6 +52,7 @@ def isValidWithNeg(witness, qPos, qNeg, x_vars):
         print("Satisfies q!")
 
 def checkSLP(q, incT=[], disjT=[], needWitness=True):
+  z3.set_param('parallel.enable', True)
   s = Solver()
 
   x_vars = [Int(f'x_{i}') for i in range(784)] #create variables (one per each input pixel: 28*28=784)
