@@ -63,22 +63,43 @@ def stressTest(SLPmodels):
 # - define negConcepts as the list of concepts appearing negated in the query
 # - add in inclAxioms a pair (a, b) to define an inclusion assertion from a to b
 # - add in disjAxioms a pair (a, b) to define a disjointness assertion between a and b
+# def main():
+#     #carico modelli
+#     SLPmodels, SLPeven = getModels(modelType='SLP', testFlag=False)
+
+#     #definisco ontologia
+#     inclAxioms = [(SLPmodels[2], SLPeven)]
+#     disjAxioms = []
+
+#     #definisco query
+#     posConcepts = [SLPmodels[1], SLPmodels[3]]
+#     negConcepts = []
+    
+#     #chiamo solver
+#     configureSolver()
+#     start_time = time.time()
+#     checkSLPwithNeg(posConcepts, negConcepts, inclAxioms, disjAxioms, needWitness=True, magnitude=0)
+#     end_time = time.time()
+
+#     #riporto tempistiche del solver
+#     elapsed = end_time - start_time
+#     print(f"Execution time: {elapsed:.4f}s")
 def main():
     #carico modelli
-    SLPmodels, SLPeven = getModels(modelType='SLP', testFlag=False)
+    MLPmodels, _ = getModels(modelType='MLP', testFlag=False)
 
     #definisco ontologia
-    inclAxioms = [(SLPmodels[2], SLPeven)]
-    disjAxioms = []
+    inclAxioms = []
+    disjAxioms = [(MLPmodels[2], MLPmodels[3])]
 
     #definisco query
-    posConcepts = [SLPmodels[1], SLPmodels[3]]
+    posConcepts = [MLPmodels[1], MLPmodels[2]]
     negConcepts = []
     
     #chiamo solver
     configureSolver()
     start_time = time.time()
-    checkSLPwithNeg(posConcepts, negConcepts, inclAxioms, disjAxioms, needWitness=True, magnitude=50)
+    checkMLP(posConcepts, h_size=16, needWitness=True, magnitude=0)
     end_time = time.time()
 
     #riporto tempistiche del solver

@@ -184,7 +184,7 @@ def checkSLPwithNeg(qPos, qNeg=[], incT=[], disjT=[], needWitness=True, magnitud
       witness = s.model()
       isValidWithNeg(witness, qPos, qNeg, x_vars)
   
-def checkMLP(q, h_size):
+def checkMLP(q, h_size, needWitness=True, magnitude = 0):
   s = Solver()
   in_size = 28*28
 
@@ -193,6 +193,7 @@ def checkMLP(q, h_size):
   for x in x_vars:
     s.add(x >= 0)
     s.add(x <= 255)
+  if (magnitude>0): s.add(Sum([x_vars[i] for i in range(len(x_vars))]) > magnitude) #magnitude per forzare non-trivial solutions
 
   for model in q:
     W_1 = list(model.parameters())[0].data
@@ -226,7 +227,7 @@ def checkMLP(q, h_size):
     print("start solver")
     res = s.check()
     print(res)
-    if res == sat:
+    if res == sat and needWitness == True:
         print("looking for a witness")
         witness = s.model()
         isValid(witness, q, x_vars)
