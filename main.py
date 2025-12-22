@@ -1,3 +1,4 @@
+import argparse
 from src.solver import *
 from src.train import *
 import time
@@ -84,7 +85,7 @@ def stressTest(SLPmodels):
 #     #riporto tempistiche del solver
 #     elapsed = end_time - start_time
 #     print(f"Execution time: {elapsed:.4f}s")
-def main():
+def main(args):
     #carico modelli
     models, _ = getModels(modelType='MLP', testFlag=False)
 
@@ -101,13 +102,26 @@ def main():
     # start_time = time.time()
     # checkMLP(posConcepts, h_size=16, needWitness=True, magnitude=0, withTactics=False)
     # checkSLPwithNeg(posConcepts, negConcepts, inclAxioms, disjAxioms, needWitness=True, magnitude=0, withTactics=True)
-    generateSimpleProgram(posConcepts, mode='print', in_size=3, dom="real")
+    generateSimpleProgram(posConcepts, 
+                          mode=args.mode, 
+                          in_size=args.in_size, 
+                          h_size=args.h_size, 
+                          dom=args.dom)
     # end_time = time.time()
 
     #riporto tempistiche del solver
     # elapsed = end_time - start_time
     # print(f"Execution time: {elapsed:.4f}s")
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="HKB experiments CLI")
+    parser.add_argument("--mode", choices=["print", "solve"], default="print", help="Modalità di esecuzione (genera programma .smt2, o lo risolve con API python)")
+    parser.add_argument("--in-size", type=int, default=50, dest="in_size", help="Dimensione input layer")
+    parser.add_argument("--h-size", type=int, default=16, dest="h_size", help="Dimensione hidden layer")
+    parser.add_argument("--dom", choices=["integer", "real"], default="integer", help="Dominio delle variabili")
+    return parser.parse_args()
+
 if __name__ == "__main__":
-    main()
+    args = parse_args()
+    main(args)
 
