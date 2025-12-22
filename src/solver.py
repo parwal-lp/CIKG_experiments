@@ -322,15 +322,20 @@ def checkMLP(q, h_size, needWitness=True, magnitude = 0, withTactics=False):
       #isValidWithNeg(witness, qPos, qNeg, x_vars)
 
 
-def generateSimpleProgram(q, mode, in_size=10):
+def generateSimpleProgram(q, mode, in_size=10, dom="integer"):
   s = Solver()
-  h_size = 6
+  h_size = 2
 
-  x_vars = [Int(f'x_{i}') for i in range(in_size)] #create variables (one per each input feature)
+  if dom=="integer":
+    x_vars = [Int(f'x_{i}') for i in range(in_size)] #create variables (one per each input feature)
+
+  elif dom=="real":
+    x_vars = [Real(f'x_{i}') for i in range(in_size)] #create variables (one per each input feature)
+
   for x in x_vars:
     s.add(x >= 0)
     s.add(x <= 1)
-
+    
   for model in q:
     W_1 = list(model.parameters())[0].data
     W_1 = torch.transpose(W_1, 0, 1)

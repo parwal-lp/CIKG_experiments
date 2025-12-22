@@ -101,7 +101,7 @@ def main():
     # start_time = time.time()
     # checkMLP(posConcepts, h_size=16, needWitness=True, magnitude=0, withTactics=False)
     # checkSLPwithNeg(posConcepts, negConcepts, inclAxioms, disjAxioms, needWitness=True, magnitude=0, withTactics=True)
-    generateSimpleProgram(posConcepts, mode='print', in_size=40)
+    generateSimpleProgram(posConcepts, mode='print', in_size=3, dom="real")
     # end_time = time.time()
 
     #riporto tempistiche del solver
