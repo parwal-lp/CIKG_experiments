@@ -8,21 +8,20 @@ from src.train import detectDevice
 from dotenv import load_dotenv
 import os
 
-def saveSolver(s, file_path):
+def saveProgram(s, file_path):
   try:
     dir_name = os.path.dirname(file_path)
     if dir_name:
       os.makedirs(dir_name, exist_ok=True)
-    # Prefer SMT-LIB2 when available for full fidelity
     if hasattr(s, 'to_smt2'):
       content = s.to_smt2()
     else:
       content = str(s)
     with open(file_path, 'w') as f:
       f.write(content if isinstance(content, str) else str(content))
-    print(f"Solver dumped to {file_path}")
+    print(f"Program dumped to {file_path}")
   except Exception as e:
-    print(f"Failed to dump solver: {e}")
+    print(f"Failed to dump program: {e}")
 
 def configureSolver(multithread):
   if multithread==True:
@@ -237,7 +236,7 @@ def checkSLPwithNeg(qPos, qNeg=[], incT=[], disjT=[], needWitness=True, magnitud
 
 
   
-def checkMLP(q, h_size, needWitness=True, magnitude = 0, withTactics=False):
+def checkMLP(q, h_size, needWitness=True, magnitude = 0, withTactics=False, mode="print"):
   if withTactics==True:
     print("using tactics")
     s = Goal()
@@ -246,7 +245,7 @@ def checkMLP(q, h_size, needWitness=True, magnitude = 0, withTactics=False):
   
   in_size = 28*28
 
-  x_vars = [Int(f'x_{i}') for i in range(in_size)] #create variables (one per each input pixel: 28*28=784)
+  x_vars = [Real(f'x_{i}') for i in range(in_size)] #create variables (one per each input pixel: 28*28=784)
   #s.add(Sum([ x_vars[i] for i in range(in_size)]) >= 20000)
   for x in x_vars:
     s.add(x >= 0)
@@ -267,8 +266,8 @@ def checkMLP(q, h_size, needWitness=True, magnitude = 0, withTactics=False):
     y1 = []
     print("encode first layer")
     for j in range(h_size):
-      weighted_sum = Sum([ x_vars[i] * RealVal(W_1[i][j].item()) for i in range(in_size)])
-      y1_j = weighted_sum + RealVal(b_1[j].item())
+      weighted_sum = Sum([ x_vars[i] * W_1[i][j].item() for i in range(in_size)])
+      y1_j = weighted_sum + b_1[j].item()
       y1.append(y1_j)
 
     # ReLU - second layer
@@ -277,7 +276,7 @@ def checkMLP(q, h_size, needWitness=True, magnitude = 0, withTactics=False):
 
     # linear combination - third layer
     print("encode third layer")
-    y3 = Sum([RealVal(W_2[j].item()) * y2[j] for j in range(h_size)]) + RealVal(b_2)
+    y3 = Sum([W_2[j].item() * y2[j] for j in range(h_size)]) + b_2
 
     # add inequality to the system
     s.add(y3 >= 0)
@@ -289,41 +288,53 @@ def checkMLP(q, h_size, needWitness=True, magnitude = 0, withTactics=False):
   # except Exception as e:
   #   print(f"Could not write solver to file: {e}")
   # return
+  if (mode == 'print'):
+    try:
+      project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+      saveProgram(s, os.path.join(project_root, 'logs', 'mnist.smt2'))
+    except Exception as e:
+      print(f"Could not write solver to file: {e}")
+    return
   
-  if withTactics==True:
-    t1 = Tactic('simplify')
-    t2 = Tactic('solve-eqs')
-    t  = Then(t1, t2)
-    r = t(s)
-    print("result from tactics:")
-    print (r)
+  elif (mode == 'solve'):
+    if withTactics==True:
+      t1 = Tactic('simplify')
+      t2 = Tactic('solve-eqs')
+      t  = Then(t1, t2)
+      r = t(s)
+      print("result from tactics:")
+      print (r)
 
-    sol = Solver()
-    sol.add(r[0])
-    print("start solver")
-    res = sol.check()
-    print(res)
-    
-    # print("Model for the original goal:")
-    # print (r.convert_model(sol.model())) #buggato anche se in documentazione viene detto di usarlo così, va in errore
-    if res == sat and needWitness == True:
-      print("Model for the subgoal (witness):")
-      witness = sol.model()
-      print (witness)
-      #isValidWithNeg(witness, qPos, qNeg, x_vars)
+      sol = Solver()
+      sol.add(r[0])
+      print("start solver")
+      res = sol.check()
+      print(res)
+      
+      # print("Model for the original goal:")
+      # print (r.convert_model(sol.model())) #buggato anche se in documentazione viene detto di usarlo così, va in errore
+      if res == sat and needWitness == True:
+        print("Model for the subgoal (witness):")
+        witness = sol.model()
+        print (witness)
+        #isValidWithNeg(witness, qPos, qNeg, x_vars)
+    else:
+      print("start solver")
+      res = s.check()
+      print(res)
+      if res == sat and needWitness == True:
+        print("Model (witness):")
+        witness = s.model()
+        print(witness)
+        #isValidWithNeg(witness, qPos, qNeg, x_vars)
+
+
+def generateSimpleProgram(q, mode, in_size=10, h_size=6, dom="integer", tactics="no"):
+  if tactics=="yes":
+    print("using tactics")
+    s = Goal()
   else:
-    print("start solver")
-    res = s.check()
-    print(res)
-    if res == sat and needWitness == True:
-      print("Model (witness):")
-      witness = s.model()
-      print(witness)
-      #isValidWithNeg(witness, qPos, qNeg, x_vars)
-
-
-def generateSimpleProgram(q, mode, in_size=10, h_size=6, dom="integer"):
-  s = Solver()
+    s = Solver()
 
   if dom=="integer":
     x_vars = [Int(f'x_{i}') for i in range(in_size)] #create variables (one per each input feature)
@@ -368,12 +379,18 @@ def generateSimpleProgram(q, mode, in_size=10, h_size=6, dom="integer"):
   if (mode == 'print'):
     try:
       project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-      saveSolver(s, os.path.join(project_root, 'logs', 'simple.smt2'))
+      saveProgram(s, os.path.join(project_root, 'logs', 'simple.smt2'))
     except Exception as e:
       print(f"Could not write solver to file: {e}")
     return
   
   elif (mode == 'solve'):
+    if tactics=="yes":
+      t1 = Tactic('simplify')
+      t2 = Tactic('solve-eqs')
+      t  = Then(t1, t2)
+      s = t(s)
+
     print("start solver")
     start_time = time.time()
     res = s.check()

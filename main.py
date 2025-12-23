@@ -100,13 +100,14 @@ def main(args):
     #chiamo solver
     configureSolver(multithread=False)
     # start_time = time.time()
-    # checkMLP(posConcepts, h_size=16, needWitness=True, magnitude=0, withTactics=False)
+    checkMLP(posConcepts, h_size=16, needWitness=True, magnitude=0, withTactics=False)
     # checkSLPwithNeg(posConcepts, negConcepts, inclAxioms, disjAxioms, needWitness=True, magnitude=0, withTactics=True)
-    generateSimpleProgram(posConcepts, 
-                          mode=args.mode, 
-                          in_size=args.in_size, 
-                          h_size=args.h_size, 
-                          dom=args.dom)
+    # generateSimpleProgram(posConcepts, 
+    #                       mode=args.mode, 
+    #                       in_size=args.in_size, 
+    #                       h_size=args.h_size, 
+    #                       dom=args.dom,
+    #                       tactics=args.tactics)
     # end_time = time.time()
 
     #riporto tempistiche del solver
@@ -119,6 +120,7 @@ def parse_args():
     parser.add_argument("--in-size", type=int, default=50, dest="in_size", help="Dimensione input layer")
     parser.add_argument("--h-size", type=int, default=16, dest="h_size", help="Dimensione hidden layer")
     parser.add_argument("--dom", choices=["integer", "real"], default="integer", help="Dominio delle variabili")
+    parser.add_argument("--tactics", choices=["yes", "no"], default="no", help="Semplificazione pre-solving")
     return parser.parse_args()
 
 if __name__ == "__main__":
