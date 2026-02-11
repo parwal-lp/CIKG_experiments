@@ -272,7 +272,8 @@ def checkMLP(q, h_size, needWitness=True, magnitude = 0, withTactics=False, mode
 
     # ReLU - second layer
     print("encode second layer")
-    y2 = [If(y1[j]>0, y1[j], 0) for j in range(h_size)] #relu encoding
+    # y2 = [If(y1[j]>0, y1[j], 0) for j in range(h_size)] #relu encoding
+    y2 = [y1[j]*y1[j] for j in range(h_size)] #quadratic encoding
 
     # linear combination - third layer
     print("encode third layer")
