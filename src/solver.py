@@ -245,7 +245,7 @@ def checkMLP(q, h_size, needWitness=True, magnitude = 0, withTactics=False, mode
   
   in_size = 28*28
 
-  x_vars = [Real(f'x_{i}') for i in range(in_size)] #create variables (one per each input pixel: 28*28=784)
+  x_vars = [Int(f'x_{i}') for i in range(in_size)] #create variables (one per each input pixel: 28*28=784)
   #s.add(Sum([ x_vars[i] for i in range(in_size)]) >= 20000)
   for x in x_vars:
     s.add(x >= 0)
