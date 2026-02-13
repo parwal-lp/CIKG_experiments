@@ -1,11 +1,5 @@
-import numpy as np
-import argparse
 from src.solver import *
 from src.train import *
-import time
-import random
-from itertools import combinations
-from collections import defaultdict
 def writeNNet(weights, biases, inputMins, inputMaxes, means, ranges, fileName):
     '''
     Write network data to the .nnet file format.
@@ -61,9 +55,8 @@ def getModels(modelType):
 
 
 models = getModels(modelType='MLP')
-q = [models[1], models[2]]
 
-for model in q:
+for model in models:
     # Extract parameters and convert to CPU numpy arrays without altering shapes
     W_1 = list(model.parameters())[0].detach().cpu().numpy()  # shape: (out1, in)
     b_1 = list(model.parameters())[1].detach().cpu().numpy()  # shape: (out1,)
@@ -84,5 +77,5 @@ for model in q:
         inputMaxes=input_maxes,
         means=means,
         ranges=ranges,
-        fileName=f"codifica_{q.index(model)}.nnet"
+        fileName=f"codifica_{models.index(model)}.nnet"
     )
