@@ -47,6 +47,8 @@ with torch.no_grad():
     modelComb.fc1.bias.copy_(bcomb_1)
     modelComb.fc2.weight.copy_(Wcomb_2)
     modelComb.fc2.bias.copy_(bcomb_2)
+    modelComb.fc2.weight.mul_(-1)
+    modelComb.fc2.bias.mul_(-1)
     modelComb.fc3.weight.copy_(torch.tensor([-1.0, -1.0]))
 
 print("-----------------")

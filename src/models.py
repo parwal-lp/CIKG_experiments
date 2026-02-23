@@ -45,7 +45,7 @@ class FlexMLP(nn.Module):
         y1 = self.fc1(x)
         y2 = self.relu1(y1)
         y3 = self.fc2(y2)
-        y4 = self.relu2(-y3)
+        y4 = self.relu2(y3)
         y5 = self.fc3(y4)
         return y5
 '''
