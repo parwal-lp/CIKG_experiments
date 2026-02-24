@@ -46,7 +46,7 @@ def andEncoder(predicates):
             bcomb_1[pos] = b_1.detach().cpu().numpy()[pos - b1_idx_start]
 
         for col in range(W2_col_start, W2_col_end):
-            Wcomb_2[W2_row, col] = W_2.detach().cpu().numpy()[col - W2_col_start]
+            Wcomb_2[W2_row, col] = W_2.detach().cpu().numpy()[0, col - W2_col_start]
 
         for pos in range(b2_idx_start, b2_idx_end):
             bcomb_2[pos] = b_2.detach().cpu().numpy()[pos - b2_idx_start]
