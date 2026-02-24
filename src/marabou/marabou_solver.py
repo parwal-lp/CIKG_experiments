@@ -2,14 +2,14 @@ from maraboupy import Marabou
 from maraboupy import MarabouCore
 from maraboupy.Marabou import createOptions
 
-def solveNNET(nnetFile):
+def solveNNET(nnetFilePath):
     nnet0 = "generated_encodings/NNET/codifica_0.nnet"
     nnet1 = "generated_encodings/NNET/codifica_1.nnet"
 
     network0 = Marabou.read_nnet(nnet0)
     network1 = Marabou.read_nnet(nnet1)
 
-    network = Marabou.read_nnet(nnetFile)
+    network = Marabou.read_nnet(nnetFilePath)
 
     ret = network.solve()
 
@@ -25,8 +25,8 @@ def solveNNET(nnetFile):
     query1 = network1.getInputQuery()
     #impossibile concatenare queste due reti usando funzioni native di marabou
 
-def solveONNX(onnxFile):
-    network = Marabou.read_onnx(onnxFile)
+def solveONNX(onnxFilePath):
+    network = Marabou.read_onnx(onnxFilePath)
 
     inputVars = network.inputVars[0].flatten()
     outputVars = network.outputVars[0].flatten()

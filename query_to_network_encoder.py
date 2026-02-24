@@ -2,57 +2,47 @@
 import numpy as np
 from src.z3.z3_solver import *
 from src.classifiers.train import *
-from src.utils import getModels
 
+#dichiaro i parametri che verranno usati per la rete combinata finale
+Wcomb_1, Wcomb_2, bcomb_1, bcomb_2 = None
 
+'''
+Funzione che crea una rete che dice sì se e solo se tutti i modelli in input dicono sì, altrimenti dice no
+In particolare, per supportare gli atomi negati, ogni modello è specificato in coppia con una flag (True se il modello va considerato positivo, False se va negato)
+'''
+def andEncoder(predicates):
+    input_size = 28*28
+    single_model_h_size = 16
+    out_size = len(predicates)
+    combined_h_size = single_model_h_size*out_size
+    zero_array = np.zeros([1, single_model_h_size])
 
+    for index, (model, sign) in enumerate(predicates):
+        W_1 = list(model.parameters())[0]
+        b_1 = list(model.parameters())[1]
+        W_2 = list(model.parameters())[2]
+        b_2 = list(model.parameters())[3]
 
-models = getModels(modelType='MLP')
+        Wcomb_1 = torch.tensor(np.vstack((Wcomb_1, W_1.detach().cpu().numpy())))
 
-model0 = models[0]
-model1 = models[1]
+        bcomb_1 = torch.tensor(np.hstack((bcomb_1, b_1.detach().cpu().numpy())))
 
-zeroArray = np.zeros([1, 16])
+        for i in range (out_size):
+            if i == index:
+                Wcomb_2 = np.hstack((Wcomb_2, W_2.detach().cpu().numpy()))
+            else:
+                Wcomb_2 = np.hstack((Wcomb_2, zero_array))
 
-W0_1 = list(model0.parameters())[0]
-b0_1 = list(model0.parameters())[1]
-W0_2 = list(model0.parameters())[2]
-b0_2 = list(model0.parameters())[3]
+        bcomb_2 = torch.tensor(np.hstack((bcomb_2, b_2.detach().cpu().numpy())))
 
-W1_1 = list(model1.parameters())[0]
-b1_1 = list(model1.parameters())[1]
-W1_2 = list(model1.parameters())[2]
-b1_2 = list(model1.parameters())[3]
+    combinedModel = FlexMLP(input_size, combined_h_size, out_size)
+    with torch.no_grad():
+        combinedModel.fc1.weight.copy_(Wcomb_1)
+        combinedModel.fc1.bias.copy_(bcomb_1)
+        combinedModel.fc2.weight.copy_(Wcomb_2)
+        combinedModel.fc2.bias.copy_(bcomb_2)
+        combinedModel.fc2.weight.mul_(-1)
+        combinedModel.fc2.bias.mul_(-1)
+        combinedModel.fc3.weight.copy_(-torch.ones(out_size))
 
-
-
-Wcomb_1 = torch.tensor(np.vstack((W0_1.detach().cpu().numpy(), W1_1.detach().cpu().numpy())))
-
-bcomb_1 = torch.tensor(np.hstack((b0_1.detach().cpu().numpy(), b1_1.detach().cpu().numpy())))
-
-Wcomb_2_first_row = np.hstack((W0_2.detach().cpu().numpy(), zeroArray))
-Wcomb_2_second_row = np.hstack((zeroArray, W1_2.detach().cpu().numpy()))
-Wcomb_2 = torch.tensor(np.vstack((Wcomb_2_first_row, Wcomb_2_second_row)))
-
-bcomb_2 = torch.tensor(np.hstack((b0_2.detach().cpu().numpy(), b1_2.detach().cpu().numpy())))
-
-input_size = 28*28
-h_size = 32
-out_size = 2
-
-modelComb = FlexMLP(input_size, h_size, out_size)
-with torch.no_grad():
-    modelComb.fc1.weight.copy_(Wcomb_1)
-    modelComb.fc1.bias.copy_(bcomb_1)
-    modelComb.fc2.weight.copy_(Wcomb_2)
-    modelComb.fc2.bias.copy_(bcomb_2)
-    modelComb.fc2.weight.mul_(-1)
-    modelComb.fc2.bias.mul_(-1)
-    modelComb.fc3.weight.copy_(torch.tensor([-1.0, -1.0]))
-
-print("-----------------")
-out = modelComb(torch.zeros(784))
-print(out)
-print("-----------------")
-
-onnx_program = torch.onnx.export(modelComb, torch.zeros(784), "generated_encodings/ONNX/codifica_0and1.onnx")
+    return combinedModel

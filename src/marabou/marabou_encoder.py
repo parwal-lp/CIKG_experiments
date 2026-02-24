@@ -73,3 +73,7 @@ def encodeModelToNNet(model, fileName):
         ranges=ranges,
         fileName=fileName
     )
+
+def writeONNX(model, filePath):
+    torch.onnx.export(model, torch.zeros(784), filePath)
+    print(f"Model exported to ONNX format at {filePath}")
