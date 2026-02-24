@@ -11,15 +11,14 @@ In particolare, per supportare gli atomi negati, ogni modello è specificato in 
 def andEncoder(predicates):
     input_size = 28*28
     single_model_h_size = 16
-    out_size = len(predicates)
-    combined_h_size = single_model_h_size*out_size
-    zero_array = np.zeros([1, single_model_h_size])
+    query_size = len(predicates)
+    combined_h_size = single_model_h_size*query_size
 
     #dichiaro i parametri che verranno usati per la rete combinata finale
     Wcomb_1 = np.empty((combined_h_size, input_size))
     bcomb_1 = np.empty(combined_h_size)
-    Wcomb_2 = np.empty((out_size, combined_h_size))
-    bcomb_2 = np.empty(out_size)
+    Wcomb_2 = np.empty((query_size, combined_h_size))
+    bcomb_2 = np.empty(query_size)
 
     for index, (model, sign) in enumerate(predicates):
         W_1 = list(model.parameters())[0]
@@ -36,7 +35,7 @@ def andEncoder(predicates):
         Wcomb_2[index, row_start:row_end] = W_2.detach().cpu().numpy().reshape(-1)
         bcomb_2[index] = b_2.detach().cpu().numpy().reshape(-1)[0]
 
-    combinedModel = FlexMLP(input_size, combined_h_size, out_size)
+    combinedModel = FlexMLP(input_size, combined_h_size, query_size)
     with torch.no_grad():
         combinedModel.fc1.weight.copy_(torch.tensor(Wcomb_1))
         combinedModel.fc1.bias.copy_(torch.tensor(bcomb_1))
@@ -44,6 +43,6 @@ def andEncoder(predicates):
         combinedModel.fc2.bias.copy_(torch.tensor(bcomb_2))
         combinedModel.fc2.weight.mul_(-1)
         combinedModel.fc2.bias.mul_(-1)
-        combinedModel.fc3.weight.copy_(-torch.ones(out_size))
+        combinedModel.fc3.weight.copy_(-torch.ones(query_size))
 
     return combinedModel

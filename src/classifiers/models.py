@@ -2,6 +2,7 @@ import torch.nn as nn
 import torch
 
 in_size = 28*28
+h_size = 16
 
 class SimpleSLP(nn.Module):
     def __init__(self):
@@ -13,7 +14,6 @@ class SimpleSLP(nn.Module):
         x = self.fc(x)
         return x
 
-h_size = 16
 
 class SimpleMLP(nn.Module):
     def __init__(self):
