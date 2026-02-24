@@ -35,9 +35,6 @@ def andEncoder(predicates):
         W2_col_start = index * single_model_h_size
         W2_col_end = W2_col_start + single_model_h_size
 
-        b2_idx_start = index * query_size
-        b2_idx_end = b2_idx_start + query_size
-
         for row in range(W1_row_start, W1_row_end):
             for col in range(W1_columns):
                 Wcomb_1[row, col] = W_1.detach().cpu().numpy()[row - W1_row_start, col]
@@ -48,8 +45,7 @@ def andEncoder(predicates):
         for col in range(W2_col_start, W2_col_end):
             Wcomb_2[W2_row, col] = W_2.detach().cpu().numpy()[0, col - W2_col_start]
 
-        for pos in range(b2_idx_start, b2_idx_end):
-            bcomb_2[pos] = b_2.detach().cpu().numpy()[pos - b2_idx_start]
+        bcomb_2[index] = b_2.detach().cpu().numpy()[0]
 
     combinedModel = FlexMLP(input_size, combined_h_size, query_size)
     with torch.no_grad():
