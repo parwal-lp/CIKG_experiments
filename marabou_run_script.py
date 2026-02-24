@@ -14,23 +14,23 @@ ENCODINGS_DIR.mkdir(parents=True, exist_ok=True)
 def main():
     models = getModels(modelType='MLP')
 
-    for index, model in enumerate(models):
-        # encodeModelToNNet(model, f'codifica_{models.index(model)}.nnet')
-        print(f"_______________MODEL {index}_______________")
-        print(f"matrice pesi W0 ha dimensioni {list(model.parameters())[0].shape}")
-        print(f"vettore bias b0 ha dimensioni {list(model.parameters())[1].shape}")
-        print(f"matrice pesi W1 ha dimensioni {list(model.parameters())[2].shape}")
-        print(f"vettore bias b1 ha dimensioni {list(model.parameters())[3].shape}")
+    # for index, model in enumerate(models):
+    #     # encodeModelToNNet(model, f'codifica_{models.index(model)}.nnet')
+    #     print(f"_______________MODEL {index}_______________")
+    #     print(f"matrice pesi W0 ha dimensioni {list(model.parameters())[0].shape}")
+    #     print(f"vettore bias b0 ha dimensioni {list(model.parameters())[1].shape}")
+    #     print(f"matrice pesi W1 ha dimensioni {list(model.parameters())[2].shape}")
+    #     print(f"vettore bias b1 ha dimensioni {list(model.parameters())[3].shape}")
 
-    # query = [(models[0], True), (models[1], True)]
+    query = [(models[0], True), (models[1], True)]
 
-    # model = andEncoder(query)
+    model = andEncoder(query)
 
-    # fileName = "0_and_1"
-    # onnx_path = ENCODINGS_DIR / f"{fileName}.onnx"
-    # writeONNX(model, onnx_path)
+    fileName = "queryTest"
+    onnx_path = ENCODINGS_DIR / f"{fileName}.onnx"
+    writeONNX(model, onnx_path)
 
-    # solveONNX(onnx_path)
+    solveONNX(onnx_path)
 
 
 
