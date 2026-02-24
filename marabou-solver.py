@@ -5,9 +5,8 @@ from maraboupy import Marabou
 from maraboupy import MarabouCore
 from maraboupy.Marabou import createOptions
 
-'''
 # NNET version
-
+'''
 nnet0 = "codifica_0.nnet"
 nnet1 = "codifica_1.nnet"
 
@@ -29,7 +28,6 @@ print("Network 0 stats", ret[2])
 
 query0 = network0.getInputQuery()
 query1 = network1.getInputQuery()
-
 '''
 
 # ONNX version
