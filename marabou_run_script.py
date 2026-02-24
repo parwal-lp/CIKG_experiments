@@ -11,7 +11,7 @@ ENCODINGS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 
-def main(args):
+def main():
     models = getModels(modelType='MLP')
 
     # for model in models:
