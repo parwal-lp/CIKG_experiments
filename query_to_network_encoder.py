@@ -1,8 +1,6 @@
-#codifico la query Zero and One in una unica neural network
 import numpy as np
 from src.z3.z3_solver import *
 from src.classifiers.train import *
-
 
 '''
 Funzione che crea una rete che dice sì se e solo se tutti i modelli in input dicono sì, altrimenti dice no
@@ -15,10 +13,10 @@ def andEncoder(predicates):
     combined_h_size = single_model_h_size*query_size
 
     #dichiaro i parametri che verranno usati per la rete combinata finale
-    Wcomb_1 = np.empty((combined_h_size, input_size))
-    bcomb_1 = np.empty(combined_h_size)
-    Wcomb_2 = np.empty((query_size, combined_h_size))
-    bcomb_2 = np.empty(query_size)
+    Wcomb_1 = np.zeros((combined_h_size, input_size))
+    bcomb_1 = np.zeros(combined_h_size)
+    Wcomb_2 = np.zeros((query_size, combined_h_size))
+    bcomb_2 = np.zeros(query_size)
 
     for index, (model, sign) in enumerate(predicates):
         W_1 = list(model.parameters())[0]
@@ -26,14 +24,33 @@ def andEncoder(predicates):
         W_2 = list(model.parameters())[2]
         b_2 = list(model.parameters())[3]
 
-        row_start = index * single_model_h_size
-        row_end = row_start + single_model_h_size
+        W1_row_start = index * single_model_h_size
+        W1_row_end = W1_row_start + single_model_h_size
+        W1_columns = input_size
 
-        Wcomb_1[row_start:row_end, :] = W_1.detach().cpu().numpy()
-        bcomb_1[row_start:row_end] = b_1.detach().cpu().numpy()
+        b1_idx_start = index * single_model_h_size
+        b1_idx_end = b1_idx_start + single_model_h_size
 
-        Wcomb_2[index, row_start:row_end] = W_2.detach().cpu().numpy().reshape(-1)
-        bcomb_2[index] = b_2.detach().cpu().numpy().reshape(-1)[0]
+        W2_row_start = index * query_size
+        W2_row_end = W2_row_start + query_size
+        W2_columns = combined_h_size
+
+        b2_idx_start = index * query_size
+        b2_idx_end = b2_idx_start + query_size
+
+        for row in range(W1_row_start, W1_row_end):
+            for col in range(W1_columns):
+                Wcomb_1[row, col] = W_1.detach().cpu().numpy()[row - W1_row_start, col]
+
+        for pos in range(b1_idx_start, b1_idx_end):
+            bcomb_1[pos] = b_1.detach().cpu().numpy()[pos - b1_idx_start]
+
+        for row in range(W2_row_start, W2_row_end):
+            for col in range(W2_columns):
+                Wcomb_2[row, col] = W_2.detach().cpu().numpy()[row - W2_row_start, col]
+
+        for pos in range(b2_idx_start, b2_idx_end):
+            bcomb_2[pos] = b_2.detach().cpu().numpy()[pos - b2_idx_start]
 
     combinedModel = FlexMLP(input_size, combined_h_size, query_size)
     with torch.no_grad():
