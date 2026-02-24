@@ -31,8 +31,8 @@ def solveONNX(onnxFilePath):
     inputVars = network.inputVars[0].flatten()
     outputVars = network.outputVars[0].flatten()
 
-    print("input vars", inputVars)
-    print("output vars", outputVars)
+    print("input vars", len(inputVars))
+    print("output vars", len(outputVars))
 
     for i in range(len(inputVars)):
         network.setLowerBound(inputVars[i], 0.0)
@@ -41,6 +41,6 @@ def solveONNX(onnxFilePath):
     network.setLowerBound(outputVars[0], 0)
 
     ret = network.solve()
-    print("Network result:", ret[0])
-    print("Network solution:", ret[1])
-    print("Network stats", ret[2])
+    # print("Network result:", ret[0])
+    # print("Network solution:", ret[1])
+    # print("Network stats", ret[2])
