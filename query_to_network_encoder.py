@@ -4,7 +4,7 @@ from src.z3.z3_solver import *
 from src.classifiers.train import *
 
 #dichiaro i parametri che verranno usati per la rete combinata finale
-Wcomb_1, Wcomb_2, bcomb_1, bcomb_2 = None
+Wcomb_1, Wcomb_2, bcomb_1, bcomb_2 = None, None, None, None
 
 '''
 Funzione che crea una rete che dice sì se e solo se tutti i modelli in input dicono sì, altrimenti dice no
