@@ -31,9 +31,9 @@ def andEncoder(predicates):
         b1_idx_start = index * single_model_h_size
         b1_idx_end = b1_idx_start + single_model_h_size
 
-        W2_row_start = index * query_size
-        W2_row_end = W2_row_start + query_size
-        W2_columns = combined_h_size
+        W2_row = index
+        W2_col_start = index * single_model_h_size
+        W2_col_end = W2_col_start + single_model_h_size
 
         b2_idx_start = index * query_size
         b2_idx_end = b2_idx_start + query_size
@@ -45,9 +45,8 @@ def andEncoder(predicates):
         for pos in range(b1_idx_start, b1_idx_end):
             bcomb_1[pos] = b_1.detach().cpu().numpy()[pos - b1_idx_start]
 
-        for row in range(W2_row_start, W2_row_end):
-            for col in range(W2_columns):
-                Wcomb_2[row, col] = W_2.detach().cpu().numpy()[row - W2_row_start, col]
+        for col in range(W2_col_start, W2_col_end):
+            Wcomb_2[W2_row, col] = W_2.detach().cpu().numpy()[col - W2_col_start]
 
         for pos in range(b2_idx_start, b2_idx_end):
             bcomb_2[pos] = b_2.detach().cpu().numpy()[pos - b2_idx_start]
