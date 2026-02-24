@@ -1,5 +1,7 @@
-from src.solver import *
-from src.train import *
+from src.z3.z3_solver import *
+from src.classifiers.train import *
+
+'''FUNZIONE PRESA DA REPO GITHUB NNET, NON MODIFICATA'''
 def writeNNet(weights, biases, inputMins, inputMaxes, means, ranges, fileName):
     '''
     Write network data to the .nnet file format.
@@ -48,15 +50,7 @@ def writeNNet(weights, biases, inputMins, inputMaxes, means, ranges, fileName):
         print(f"Error writing NNet file: {e}")
         raise
 
-def getModels(modelType):
-    device = detectDevice()
-    models = loadModels(modelType, device)
-    return models
-
-
-models = getModels(modelType='MLP')
-
-for model in models:
+def encodeModelToNNet(model, fileName):
     # Extract parameters and convert to CPU numpy arrays without altering shapes
     W_1 = list(model.parameters())[0].detach().cpu().numpy()  # shape: (out1, in)
     b_1 = list(model.parameters())[1].detach().cpu().numpy()  # shape: (out1,)
@@ -77,5 +71,5 @@ for model in models:
         inputMaxes=input_maxes,
         means=means,
         ranges=ranges,
-        fileName=f"codifica_{models.index(model)}.nnet"
+        fileName=fileName
     )

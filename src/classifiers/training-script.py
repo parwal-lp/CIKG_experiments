@@ -1,4 +1,4 @@
-from src.train import *
+from src.classifiers.train import *
 
 #detect available device: CPU or GPU
 device = detectDevice()

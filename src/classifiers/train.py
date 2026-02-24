@@ -5,17 +5,8 @@ from torchvision.transforms import ToTensor
 from torch.utils.data import Subset
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, recall_score, accuracy_score
 import matplotlib.pyplot as plt
-from src.models import *
+from src.classifiers.models import *
 
-def detectDevice():
-    print('Using PyTorch version:', torch.__version__)
-    if torch.cuda.is_available():
-        print('Using GPU, device name:', torch.cuda.get_device_name(0))
-        device = torch.device('cuda')
-    else:
-        print('No GPU found, using CPU instead.')
-        device = torch.device('cpu')
-    return device
 
 def setTrainDatasets():
     batch_size = 32
@@ -170,21 +161,6 @@ def trainModels(modelType, train_loader, device):
     for i in range(len(models)):
         torch.save(models[i].state_dict(), f'./models/{modelType}/model_{i}')
 
-    return models
-
-def loadModels(modelType, device):
-    models = []
-    for i in range(10):
-      if modelType=='SLP':
-          model = SimpleSLP().to(device)
-      elif modelType=='MLP':
-          model = SimpleMLP().to(device)
-      else:
-          print("unknown model required")
-      models.append(model)
-    for i in range(10):
-        models[i].load_state_dict(torch.load(f'./models/{modelType}/model_{i}', weights_only=True, map_location=device))
-        print(f"loaded classifier model for {i}")
     return models
 
 def testModels(models, test_loader, device):

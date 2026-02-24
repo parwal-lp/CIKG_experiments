@@ -1,12 +1,11 @@
 #codifico la query Zero and One in una unica neural network
 import numpy as np
-from src.solver import *
-from src.train import *
+from src.z3.z3_solver import *
+from src.classifiers.train import *
+from src.utils import getModels
 
-def getModels(modelType):
-    device = detectDevice()
-    models = loadModels(modelType, device)
-    return models
+
+
 
 models = getModels(modelType='MLP')
 
@@ -56,4 +55,4 @@ out = modelComb(torch.zeros(784))
 print(out)
 print("-----------------")
 
-onnx_program = torch.onnx.export(modelComb, torch.zeros(784), "codifica_0and1.onnx")
+onnx_program = torch.onnx.export(modelComb, torch.zeros(784), "generated_encodings/ONNX/codifica_0and1.onnx")
