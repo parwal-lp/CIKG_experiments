@@ -22,7 +22,7 @@ def main():
     #     print(f"matrice pesi W1 ha dimensioni {list(model.parameters())[2].shape}")
     #     print(f"vettore bias b1 ha dimensioni {list(model.parameters())[3].shape}")
 
-    query = [(models[0], True), (models[1], True)]
+    query = [(models[0], True), (models[1], True), (models[2], False), (models[3], True), (models[4], False), (models[5], True), (models[6], False), (models[7], True), (models[8], False), (models[9], True)]
 
     model = andEncoder(query)
 
