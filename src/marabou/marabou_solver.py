@@ -38,7 +38,8 @@ def solveONNX(onnxFilePath):
         network.setLowerBound(inputVars[i], 0.0)
         network.setUpperBound(inputVars[i], 1.0)
 
-    network.setLowerBound(outputVars[0], 0)
+    network.setLowerBound(outputVars[0], 0) #devono essere soddisfatti tutti gli assiomi della tbox
+    network.setLowerBound(outputVars[1], 0) #deve essere soddisfatta la query
 
     ret = network.solve()
     # print("Network result:", ret[0])

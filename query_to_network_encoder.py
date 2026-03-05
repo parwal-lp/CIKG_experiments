@@ -62,8 +62,6 @@ def andEncoder(predicates):
 
 '''
 setto i parametri globali che verranno usati per costruire la rete finale
-- classifiers: una lista di tutti i classificatori che compaiono nella query o nella tbox
-    questo parametro ha la forma lista di modelli, per ora il merge supporta solamente MLP con una singola relu su 16 hidden nodes
 - axioms: lista degli assiomi della tbox
     questo parametro ha la forma 
     [ 
@@ -84,14 +82,11 @@ setto i parametri globali che verranno usati per costruire la rete finale
     EXAMPLE: [ [(a,b,c), (1,0,1)], [(d),(0)] ] means (a AND !b AND c) OR (!d)
     numero di disgiunti = D = len(query)
 
-TODO: idealmente dovrei poter passare una lista di concetti, la tbox, e la query sparql
-poi questa funzione dovrebbe chiamare tutti i vari metodi che ricavano i modelli e formattano le varie cose come servono
+TODO: idealmente dovrei poter passare la tbox e la query sparql
+poi questa funzione dovrebbe chiamare tutti i vari metodi che formattano la tbox nel formato axioms e la querysparql nel formato query
 '''
-def setEncodingParameters(concepts, tbox, querySparql):
+def setEncodingParameters(tbox, querySparql):
     global classifiers, axioms, query
-
-    classifiers = concepts
-    #idealmente classifiers = getClassifiers(concepts)
 
     axioms = tbox
     #idealmente axioms = formatAxioms(tbox)
@@ -99,9 +94,11 @@ def setEncodingParameters(concepts, tbox, querySparql):
     query = querySparql
     #idealmente query = formatQuery(querySparql)
 
-'''data in input una lista di classificatori, genera una rete che fa il merge di tutti questi classificatori,
+    classifiers = getAllClassifiers(axioms, query)
+
+'''genera una rete che fa il merge di tutti i classificatori raccolti in classifiers
 dando in output un vettore che contiene l'output di ciascun classificatore nell'ordine di input'''
-def mergeClassifiers(classifiers):
+def mergeClassifiers():
     input_size = 28*28
     single_model_h_size = 16
     num_classifiers = len(classifiers)
@@ -152,7 +149,7 @@ def mergeClassifiers(classifiers):
     return combinedModel
 
 '''
-data la query e la tbox fissate uqando fissiamo i parametri globali
+data la query e la tbox fissate usando fissiamo i parametri globali
 questa funzione costruisce una rete che codifica la query e la tbox
 in modo che dato in input un vettore di output dei classificatori, dia in output un vettore di 2 elementi:
 il primo elemento è >= 0 se e solo se l'input soddisfa tutti gli assiomi della tbox
@@ -233,12 +230,29 @@ def signOf(concept, expression):
         sign = signs[index]
     return sign
 
+
+'''
+date le strutture dati axioms e query
+ricava tutti i classificatori che compaiono nell'una o nell'altra, o in entrambe, senza ripetizioni
+'''
+def getAllClassifiers():
+    classifiers = set()
+    for pair in axioms:
+        axiom = pair[0]
+        for atom in axiom:
+            classifiers.add(atom)
+    for pair in query:
+        disj = pair[0]
+        for atom in disj:
+            classifiers.add(atom)
+    return list(classifiers)
+
 '''
 fa la concatenzaione della rete che fa il merge di tutti i classificatori
 con le rete che codifica la query e la tbox, in modo da ottenere l'encoding finale di tutto il problema
 '''
 def networkEncoder():
-    mergedClassifiers = mergeClassifiers(classifiers)
-    encodedQueryOntology = queryontologyEncoder(len(classifiers), len(query), len(axioms))
-    encodedModel = finalEncodedNetwork(mergedClassifiers, encodedQueryOntology)
-    return encodedModel
+    mergedClassifiers = mergeClassifiers()
+    encodedQueryAndOntology = queryontologyEncoder()
+    finalEncoding = finalEncodedNetwork(mergedClassifiers, encodedQueryAndOntology)
+    return finalEncoding
