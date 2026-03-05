@@ -15,12 +15,10 @@ def main():
     models = getModels(modelType='MLP')
 
     query = [
-        [[models[1], models[2]], [1, 1]],
-        [[models[0], models[1]], [1, 0]]
+        [[models[1], models[2]], [1, 1]]
     ]
     tbox = [
-        [[models[0], models[2]], [0, 1]],
-        [[models[1], models[3]], [0, 0]]
+        [[models[0], models[6]], [0, 0]]
     ]
     setEncodingParameters(query, tbox)
 
@@ -33,9 +31,9 @@ def main():
     # solveONNX(onnx_path)
 
     # qui sotto implementazione per supporto Sign
-    mergedClassifiers, ontologyWeights = getEncoderComponents()
+    mergedClassifiers, encodingWeights = getEncoderComponents()
     writeONNX(mergedClassifiers, onnx_path)
-    solveONNXWithSignSupport(onnx_path, ontologyWeights)
+    solveNetworkWithSign(onnx_path, encodingWeights)
 
 
 if __name__ == "__main__":

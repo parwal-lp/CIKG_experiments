@@ -66,18 +66,18 @@ nel parser ONNX di Marabou e nel formato NNET
     Restituisce le variabili di output
 '''
 def addLinearCombination(network, inputVars, W, b=None):
-    out_size = W.shape(0)
+    out_size = W.shape[0]
     outputVars = []
 
     for i in range(out_size):
         outVar = network.getNewVariable()
         outputVars.append(outVar)
         network.addEquality(
-            vars   = inputVars + outVar,
+            vars   = list(inputVars) + [outVar],
             coeffs = list(W[i]) + [-1.0],
             scalar = -(b[i] if b is not None else 0.0)
         )
-        print(network)
+    print("ho aggiunto le variabili", outputVars)
 
     return outputVars
 
@@ -104,7 +104,7 @@ def solveNetworkWithSign(mergedClassifiersPath, encodingWeights):
     
     mergedClassifiersNetwork = Marabou.read_onnx(mergedClassifiersPath)
 
-    inputVars = mergedClassifiersPath.inputVars[0].flatten()
+    inputVars = mergedClassifiersNetwork.inputVars[0].flatten()
     # Gli output dell'ONNX della rete merge dei classificatori
     mergedClassifiersOutputVars = mergedClassifiersNetwork.outputVars[0].flatten()
 
