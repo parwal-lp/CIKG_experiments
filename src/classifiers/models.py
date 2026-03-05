@@ -39,7 +39,6 @@ class OntologyAndQueryNetwork(nn.Module):
         self.fc4 = nn.Linear(n_disj+n_axioms, out_size)
 
     def forward(self, x):
-        x = x.view(-1, in_size)
         y1 = self.fc1(x)
         y2 = torch.sign(y1)
         y3 = self.fc2(y2)
