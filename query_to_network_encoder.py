@@ -258,3 +258,24 @@ def networkEncoder():
     encodedQueryAndOntology = queryontologyEncoder()
     finalEncoding = finalEncodedNetwork(mergedClassifiers, encodedQueryAndOntology)
     return finalEncoding
+
+'''
+Restituisce solo la rete dei classificatori mergiati (SimpleMLP con ReLU)
+e i pesi della rete di encoding ontologia+query, separatamente.
+Questo serve per poter esportare solo la parte ReLU come ONNX
+e costruire manualmente la parte con Sign in Marabou.
+'''
+def getEncoderComponents():
+    merged = mergeClassifiers()
+    encodedModel = queryontologyEncoder()
+    # Estrai i pesi dell'OntologyAndQueryNetwork
+    weights = {
+        'W1': list(encodedModel.parameters())[0].detach().cpu().numpy(),  # fc1.weight (no bias)
+        'W2': list(encodedModel.parameters())[1].detach().cpu().numpy(),  # fc2.weight
+        'b2': list(encodedModel.parameters())[2].detach().cpu().numpy(),  # fc2.bias
+        'W3': list(encodedModel.parameters())[3].detach().cpu().numpy(),  # fc3.weight
+        'b3': list(encodedModel.parameters())[4].detach().cpu().numpy(),  # fc3.bias
+        'W4': list(encodedModel.parameters())[5].detach().cpu().numpy(),  # fc4.weight
+        'b4': list(encodedModel.parameters())[6].detach().cpu().numpy(),  # fc4.bias
+    }
+    return merged, weights

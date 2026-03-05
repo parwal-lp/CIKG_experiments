@@ -14,10 +14,6 @@ ENCODINGS_DIR.mkdir(parents=True, exist_ok=True)
 def main():
     models = getModels(modelType='MLP')
 
-    # query = [(models[0], True), (models[1], True), (models[2], False), (models[3], True), (models[4], False), (models[5], True), (models[6], False), (models[7], True), (models[8], False), (models[9], True)]
-
-    # model = andEncoder(query)
-
     query = [
         [[models[1], models[2]], [1, 1]],
         [[models[0], models[1]], [1, 0]]
@@ -27,15 +23,19 @@ def main():
         [[models[1], models[3]], [0, 0]]
     ]
     setEncodingParameters(query, tbox)
-    model = networkEncoder()
 
-
-    fileName = "megaEncodingTest"
+    fileName = "mergedClassifiersEncoding"
     onnx_path = ENCODINGS_DIR / f"{fileName}.onnx"
-    writeONNX(model, onnx_path)
 
-    solveONNX(onnx_path)
+    #qui sotto implementazione se il parser ONNX di Marabou supportasse Sign
+    # model = networkEncoder()
+    # writeONNX(model, onnx_path)
+    # solveONNX(onnx_path)
 
+    # qui sotto implementazione per supporto Sign
+    mergedClassifiers, ontologyWeights = getEncoderComponents()
+    writeONNX(mergedClassifiers, onnx_path)
+    solveONNXWithSignSupport(onnx_path, ontologyWeights)
 
 
 if __name__ == "__main__":
