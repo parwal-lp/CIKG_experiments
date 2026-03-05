@@ -1,5 +1,6 @@
 from maraboupy import Marabou
 from maraboupy import MarabouCore
+from maraboupy import MarabouUtils
 from maraboupy.Marabou import createOptions
 import numpy as np
 
@@ -57,7 +58,7 @@ def _addLinearLayer(network, inputVars, W, b=None):
     for i in range(out_size):
         outVar = network.getNewVariable()
         outputVars.append(outVar)
-        eq = MarabouCore.Equation(MarabouCore.Equation.EquationType.EQ)
+        eq = MarabouUtils.Equation(MarabouCore.Equation.EquationType.EQ)
         for j in range(in_size):
             eq.addAddend(W[i, j], inputVars[j])
         eq.addAddend(-1.0, outVar)
