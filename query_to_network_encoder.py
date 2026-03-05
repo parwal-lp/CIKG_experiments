@@ -94,7 +94,7 @@ def setEncodingParameters(tbox, querySparql):
     query = querySparql
     #idealmente query = formatQuery(querySparql)
 
-    classifiers = getAllClassifiers(axioms, query)
+    classifiers = getAllClassifiers()
 
 '''genera una rete che fa il merge di tutti i classificatori raccolti in classifiers
 dando in output un vettore che contiene l'output di ciascun classificatore nell'ordine di input'''
