@@ -179,20 +179,22 @@ def queryontologyEncoder():
                 elif (signOf(classifiers[col], axioms[row]) == 0): #il classificatore associato al nodo corrente (col) è presente nel vincolo corrente (row) negato
                     W3[row, col] = -1
     for row in range(n_axioms, n_disj+n_axioms):
+        rebased_row = row - n_axioms
         for col in range(0, n_classifiers):
-            if (classifiers[col] not in query[row][0]): #il classificatore associato al nodo corrente (col) non è presente nel disgiunto corrente (row)
+            if (classifiers[col] not in query[rebased_row][0]): #il classificatore associato al nodo corrente (col) non è presente nel disgiunto corrente (row)
                 W3[row, col] = 0
             else:
-                if (signOf(classifiers[col], query[row]) == 1): #il classificatore associato al nodo corrente (col) è presente nel disgiunto corrente (row) positivamente
+                if (signOf(classifiers[col], query[rebased_row]) == 1): #il classificatore associato al nodo corrente (col) è presente nel disgiunto corrente (row) positivamente
                     W3[row, col] = 1
-                elif (signOf(classifiers[col], query[row]) == 0): #il classificatore associato al nodo corrente (col) è presente nel disgiunto corrente (row) negato
+                elif (signOf(classifiers[col], query[rebased_row]) == 0): #il classificatore associato al nodo corrente (col) è presente nel disgiunto corrente (row) negato
                     W3[row, col] = -1
 
     b3 = np.zeros(n_disj+n_axioms)
     for i in range(0, n_axioms):
         b3[i] = axioms[i].count(0) #numero di atomi negati nel vincolo corrente
     for i in range(n_axioms, n_disj+n_axioms):
-        b3[i] = query[i].count(0) - len(query[i][0]) #numero atomi negati nel disgiunto meno atomi totali del disgiunto -> uguale a - numero di atomi positivi? (-query[i].count(1)??)
+        rebased_i = i - n_axioms
+        b3[i] = query[rebased_i].count(0) - len(query[rebased_i][0]) #numero atomi negati nel disgiunto meno atomi totali del disgiunto -> uguale a - numero di atomi positivi? (-query[i].count(1)??)
 
     '''fc4'''
     W4 = np.zeros((2, n_disj+n_axioms))
