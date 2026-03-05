@@ -57,7 +57,7 @@ def _addLinearLayer(network, inputVars, W, b=None):
     for i in range(out_size):
         outVar = network.getNewVariable()
         outputVars.append(outVar)
-        eq = MarabouCore.Equation()
+        eq = MarabouCore.Equation(MarabouCore.Equation.EquationType.EQ)
         for j in range(in_size):
             eq.addAddend(W[i, j], inputVars[j])
         eq.addAddend(-1.0, outVar)
