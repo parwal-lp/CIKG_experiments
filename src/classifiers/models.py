@@ -34,7 +34,6 @@ class OntologyAndQueryNetwork(nn.Module):
     def __init__(self, n_classifiers, n_disj, n_axioms, out_size=2):
         super().__init__()
         self.fc1 = nn.Linear(n_classifiers, n_classifiers, bias=False)
-        self.sign = torch.sign()
         self.fc2 = nn.Linear(n_classifiers, n_classifiers)
         self.fc3 = nn.Linear(n_classifiers, n_disj+n_axioms)
         self.fc4 = nn.Linear(n_disj+n_axioms, out_size)
@@ -42,11 +41,11 @@ class OntologyAndQueryNetwork(nn.Module):
     def forward(self, x):
         x = x.view(-1, in_size)
         y1 = self.fc1(x)
-        y2 = self.sign(y1)
+        y2 = torch.sign(y1)
         y3 = self.fc2(y2)
-        y4 = self.sign(y3)
+        y4 = torch.sign(y3)
         y5 = self.fc3(y4)
-        y6 = self.sign(y5)
+        y6 = torch.sign(y5)
         out = self.fc4(y6)
         return out
     
