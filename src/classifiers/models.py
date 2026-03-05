@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch
 
+global in_size, h_size, out_size
 in_size = 28*28
 h_size = 16
 out_size = 1
@@ -17,7 +18,7 @@ class SimpleSLP(nn.Module):
 
 
 class SimpleMLP(nn.Module):
-    def __init__(self, in_size, h_size, out_size):
+    def __init__(self):
         super().__init__()
         self.fc1 = nn.Linear(in_size, h_size)
         self.relu = nn.ReLU()
