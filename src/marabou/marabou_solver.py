@@ -239,7 +239,7 @@ def solveNetwork(network, finalOutputVars):
     ret = network.solve()
     print("Result:", ret[0])
     if ret[1]:
-        print("Solution found: ->", ret[1])
+        print("Solution found")
         print("output ontologia:",ret[1][finalOutputVars[0]])
         print("output query:", ret[1][finalOutputVars[1]])
     else:
