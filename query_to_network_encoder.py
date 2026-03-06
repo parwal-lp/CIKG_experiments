@@ -160,12 +160,16 @@ def queryontologyEncoder():
     n_axioms = len(axioms)
     n_disj = len(query)
     '''fc1'''
-    W1 = np.ones((n_classifiers, n_classifiers))
+    W1 = np.eye(n_classifiers)
     #bias zero in the first layer = no bias, settato a False nella definizione del modello
 
     '''fc2'''
-    W2 = np.ones((n_classifiers, n_classifiers))
+    W2 = np.eye(n_classifiers)
     b2 = np.ones(n_classifiers)
+
+    # '''fc2 - pass-through in {-1,+1} domain (la conversione a {0,1} non funziona con sign(0)=1 di Marabou)'''
+    # W2 = np.eye(n_classifiers)
+    # b2 = np.zeros(n_classifiers)
 
     '''fc3'''
     W3 = np.zeros((n_disj+n_axioms, n_classifiers))
@@ -191,10 +195,10 @@ def queryontologyEncoder():
 
     b3 = np.zeros(n_disj+n_axioms)
     for i in range(0, n_axioms):
-        b3[i] = axioms[i].count(0) #numero di atomi negati nel vincolo corrente
+        b3[i] = axioms[i][1].count(0) #numero di atomi negati nel vincolo corrente
     for i in range(n_axioms, n_disj+n_axioms):
         rebased_i = i - n_axioms
-        b3[i] = query[rebased_i].count(0) - len(query[rebased_i][0]) #numero atomi negati nel disgiunto meno atomi totali del disgiunto -> uguale a - numero di atomi positivi? (-query[i].count(1)??)
+        b3[i] = query[rebased_i][1].count(0) - len(query[rebased_i][1]) #numero atomi negati nel disgiunto meno atomi totali del disgiunto -> uguale a - numero di atomi positivi? (-query[i].count(1)??)
 
     '''fc4'''
     W4 = np.zeros((2, n_disj+n_axioms))
@@ -225,7 +229,7 @@ restituisce il segno associato a quel concetto in quell'espressione, se è prese
 def signOf(concept, expression):
     atoms = expression[0]
     signs = expression[1]
-    if concept not in expression:
+    if concept not in atoms:
         return "error: concept not in expression"
     else:
         index = atoms.index(concept)
@@ -279,3 +283,61 @@ def getEncoderComponents():
         'b4': list(encodedModel.parameters())[6].detach().cpu().numpy(),  # fc4.bias
     }
     return merged, weights
+
+
+'''
+data la query e la tbox fissate usando fissiamo i parametri globali
+questa funzione costruisce le matrici W e i bias b dei layer che servono a fare l'encoding di query e ontologi
+'''
+def getOntologyQueryEncodingWeights():
+    n_classifiers = len(classifiers)
+    n_axioms = len(axioms)
+    n_disj = len(query)
+
+    '''fc1'''
+    W1 = np.zeros((n_disj+n_axioms, n_classifiers))
+    for row in range(0, n_axioms):
+        for col in range(0, n_classifiers):
+            if (classifiers[col] not in axioms[row][0]): #il classificatore associato al nodo corrente (col) non è presente nel vincolo corrente (row)
+                W1[row, col] = 0
+            else:
+                if (signOf(classifiers[col], axioms[row]) == 1): #il classificatore associato al nodo corrente (col) è presente nel vincolo corrente (row) positivamente
+                    W1[row, col] = 1
+                elif (signOf(classifiers[col], axioms[row]) == 0): #il classificatore associato al nodo corrente (col) è presente nel vincolo corrente (row) negato
+                    W1[row, col] = -1
+    for row in range(n_axioms, n_disj+n_axioms):
+        rebased_row = row - n_axioms
+        for col in range(0, n_classifiers):
+            if (classifiers[col] not in query[rebased_row][0]): #il classificatore associato al nodo corrente (col) non è presente nel disgiunto corrente (row)
+                W1[row, col] = 0
+            else:
+                if (signOf(classifiers[col], query[rebased_row]) == 1): #il classificatore associato al nodo corrente (col) è presente nel disgiunto corrente (row) positivamente
+                    W1[row, col] = 1
+                elif (signOf(classifiers[col], query[rebased_row]) == 0): #il classificatore associato al nodo corrente (col) è presente nel disgiunto corrente (row) negato
+                    W1[row, col] = -1
+
+    b1 = np.zeros(n_disj+n_axioms)
+    for i in range(0, n_axioms):
+        b1[i] = 0 #no bias
+    for i in range(n_axioms, n_disj+n_axioms):
+        rebased_i = i - n_axioms
+        b1[i] = len(query[rebased_i][1]) #numero atomi nel disgiunto
+
+    '''fc2'''
+    W2 = np.zeros((2, n_disj+n_axioms))
+    for col in range(0, n_axioms):
+        W2[0][col] = 1
+    for col in range(n_axioms, n_disj+n_axioms):
+        W2[1][col] = 1
+    b2 = np.zeros(2)
+    b2[0] = -n_axioms
+    b2[1] = len(query)-1
+
+    weightsDict = {
+        'W1': W1,
+        'b1': b1,
+        'W2': W2,
+        'b2': b2
+    }
+
+    return weightsDict

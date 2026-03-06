@@ -82,7 +82,9 @@ def addLinearCombination(network, inputVars, W, b=None):
     return outputVars
 
 '''
-    Aggiunge una activation function di tipo Sign alla rete in input
+    DEPRECATA - NON POSSO USARLA
+    Aggiunge una activation function di tipo Sign (Marabou) alla rete in input.
+    sign_marabou: sign(x<0)=-1, sign(x>=0)=+1 -> ATTENZIONE: mismatch con sign di pytorch sign(x<0)=-1, sign(x=0)=0, sign(x>0)=+1
     Restituisce le variabili di output
 '''
 def addSignActivation(network, inputVars):
@@ -94,13 +96,33 @@ def addSignActivation(network, inputVars):
     return outputVars
 
 '''
+    Aggiunge una activation function sign3 (three way sign) compatibile con PyTorch:
+    sign3(x<0)=-1, sign3(x=0)=0, sign3(x>0)=+1
+    Restituisce le variabili di output
+    TODO not implemented yet
+'''
+def addSign3Activation(network, inputVars):
+
+    # x > 0  →  y = 1
+    # x = 0  →  y = 0
+    # x < 0  →  y = -1
+
+    outputVars = []
+
+    for inVar in inputVars:
+        outVar = network.getNewVariable()
+        outputVars.append(outVar)
+
+    return outputVars
+
+'''
     chiama solve di Marabou su una rete costituita dal merge dei classificatori (preso da ONNX)
     seguito da layer costruiti manualmente dell'encoding query e tbox
 
     - encodingWeights è un dict con chiavi: W1, W2, b2, W3, b3, W4, b4 corrispondenti ai pesi dell'OntologyAndQueryNetwork
     - mergedClassifiersPath è il path del file ONNX che contiene solo la parte di rete che fa il merge dei classificatori
 '''
-def solveNetworkWithSign(mergedClassifiersPath, encodingWeights):
+def solveNetworkWithSign3(mergedClassifiersPath, encodingWeights):
     
     mergedClassifiersNetwork = Marabou.read_onnx(mergedClassifiersPath)
 
@@ -130,15 +152,15 @@ def solveNetworkWithSign(mergedClassifiersPath, encodingWeights):
 
     # Layer 1: linear (no bias) + sign
     layer1_linear = addLinearCombination(finalNetwork, mergedClassifiersOutputVars, W1)
-    layer1_sign = addSignActivation(finalNetwork, layer1_linear)
+    layer1_sign = addSign3Activation(finalNetwork, layer1_linear)
 
     # Layer 2: linear (with bias) + sign
     layer2_linear = addLinearCombination(finalNetwork, layer1_sign, W2, b2)
-    layer2_sign = addSignActivation(finalNetwork, layer2_linear)
+    layer2_sign = addSign3Activation(finalNetwork, layer2_linear)
 
     # Layer 3: linear (with bias) + sign
     layer3_linear = addLinearCombination(finalNetwork, layer2_sign, W3, b3)
-    layer3_sign = addSignActivation(finalNetwork, layer3_linear)
+    layer3_sign = addSign3Activation(finalNetwork, layer3_linear)
 
     # Layer 4: linear (with bias) and no activation, these are the final outputs
     finalOutputVars = addLinearCombination(finalNetwork, layer3_sign, W4, b4)
@@ -152,6 +174,69 @@ def solveNetworkWithSign(mergedClassifiersPath, encodingWeights):
     finalNetwork.setLowerBound(finalOutputVars[1], 0)
 
     ret = finalNetwork.solve()
+    print("Result:", ret[0])
+    if ret[1]:
+        print("Solution found")
+    else:
+        print("No solution")
+
+'''
+    data una rete che fa il merge di tutti i classificatori (da file ONNX), 
+    accoda layer costruiti manualmente per fare l'encoding di query e tbox
+    utilizzando la Sign con la semantica di Marabou
+
+    - encodingWeights è un dict con chiavi: W1, b1, W2, b2 corrispondenti ai pesi dei layer che fanno l'encoding di query e ontologia
+    - mergedClassifiersPath è il path del file ONNX che contiene solo la parte di rete che fa il merge dei classificatori
+'''
+def addOntologyAndQueryEncoding(mergedClassifiersPath, encodingWeights):
+    
+    mergedClassifiersNetwork = Marabou.read_onnx(mergedClassifiersPath)
+
+    inputVars = mergedClassifiersNetwork.inputVars[0].flatten()
+    # Gli output dell'ONNX della rete merge dei classificatori
+    mergedClassifiersOutputVars = mergedClassifiersNetwork.outputVars[0].flatten()
+
+    n_inputs = len(inputVars)
+    n_classifiers = len(mergedClassifiersOutputVars)
+    print(f"input vars: {n_inputs}")
+    print(f"number of classifiers in merged network: {n_classifiers}")
+
+    # Vincoli sugli input: pixel nell'intervallo [0, 1]
+    for i in range(n_inputs):
+        mergedClassifiersNetwork.setLowerBound(inputVars[i], 0.0)
+        mergedClassifiersNetwork.setUpperBound(inputVars[i], 1.0)
+
+    W1 = encodingWeights['W1']
+    b1 = encodingWeights['b1']
+    W2 = encodingWeights['W2']
+    b2 = encodingWeights['b2']
+
+    finalNetwork = mergedClassifiersNetwork
+
+    # Layer 0: sign
+    layer0_sign = addSignActivation(finalNetwork, mergedClassifiersOutputVars)
+
+    # Layer 1: linear (with bias) + sign
+    layer1_linear = addLinearCombination(finalNetwork, layer0_sign, W1, b1)
+    layer1_sign = addSignActivation(finalNetwork, layer1_linear)
+
+    # Layer 2: linear (with bias)
+    finalOutputVars = addLinearCombination(finalNetwork, layer1_sign, W2, b2)
+
+    print(f"final output vars: {len(finalOutputVars)}")
+
+    # Vincoli sull'output:
+    # outputVars[0] >= 0: tutti gli assiomi della tbox soddisfatti
+    # outputVars[1] >= 0: query soddisfatta
+    finalNetwork.setLowerBound(finalOutputVars[0], 0)
+    finalNetwork.setLowerBound(finalOutputVars[1], 0)
+
+    return finalNetwork
+
+
+
+def solveNetwork(network):
+    ret = network.solve()
     print("Result:", ret[0])
     if ret[1]:
         print("Solution found")

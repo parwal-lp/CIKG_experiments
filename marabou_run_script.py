@@ -20,7 +20,7 @@ def main():
     tbox = [
         [[models[0], models[6]], [0, 0]]
     ]
-    setEncodingParameters(query, tbox)
+    setEncodingParameters(tbox, query)
 
     fileName = "mergedClassifiersEncoding"
     onnx_path = ENCODINGS_DIR / f"{fileName}.onnx"
@@ -31,9 +31,13 @@ def main():
     # solveONNX(onnx_path)
 
     # qui sotto implementazione per supporto Sign
-    mergedClassifiers, encodingWeights = getEncoderComponents()
+    mergedClassifiers = mergeClassifiers()
     writeONNX(mergedClassifiers, onnx_path)
-    solveNetworkWithSign(onnx_path, encodingWeights)
+
+    encodingWeights = getOntologyQueryEncodingWeights()
+
+    network = addOntologyAndQueryEncoding(onnx_path, encodingWeights)
+    solveNetwork(network)
 
 
 if __name__ == "__main__":
