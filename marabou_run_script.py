@@ -36,8 +36,8 @@ def main():
 
     encodingWeights = getOntologyQueryEncodingWeights()
 
-    network = addOntologyAndQueryEncoding(onnx_path, encodingWeights)
-    solveNetwork(network)
+    network, outputVars = addOntologyAndQueryEncoding(onnx_path, encodingWeights)
+    solveNetwork(network, outputVars)
 
 
 if __name__ == "__main__":

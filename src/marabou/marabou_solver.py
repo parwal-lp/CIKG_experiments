@@ -231,14 +231,16 @@ def addOntologyAndQueryEncoding(mergedClassifiersPath, encodingWeights):
     finalNetwork.setLowerBound(finalOutputVars[0], 0)
     finalNetwork.setLowerBound(finalOutputVars[1], 0)
 
-    return finalNetwork
+    return finalNetwork, finalOutputVars
 
 
 
-def solveNetwork(network):
+def solveNetwork(network, finalOutputVars):
     ret = network.solve()
     print("Result:", ret[0])
     if ret[1]:
-        print("Solution found")
+        print("Solution found: ->", ret[1])
+        print("output ontologia:",ret[1][finalOutputVars[0]])
+        print("output query:", ret[1][finalOutputVars[1]])
     else:
         print("No solution")
