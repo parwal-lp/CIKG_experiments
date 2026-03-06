@@ -15,12 +15,14 @@ def main():
     models = getModels(modelType='MLP')
 
     query = [
-        [[models[0], models[1]], [1, 1]],
-        [[models[0], models[2]], [1, 0]]
+        [[models[0], models[1], models[2], models[3], models[4], models[5], models[6]], [1, 1, 1, 1, 1, 1, 0]],
+        [[models[7], models[8], models[9]], [1, 0, 1]]
     ]
     tbox = [
         [[models[0], models[1]], [0, 0]],
-        [[models[0], models[2]], [0, 1]]
+        [[models[0], models[2]], [0, 0]],
+        [[models[9], models[8]], [0, 0]],
+        [[models[2], models[1]], [0, 1]]
     ]
     setEncodingParameters(tbox, query)
 
