@@ -321,7 +321,7 @@ def getOntologyQueryEncodingWeights():
         b1[i] = 0 #no bias
     for i in range(n_axioms, n_disj+n_axioms):
         rebased_i = i - n_axioms
-        b1[i] = len(query[rebased_i][1]) #numero atomi nel disgiunto
+        b1[i] = -len(query[rebased_i][1]) # -numero atomi nel disgiunto
 
     '''fc2'''
     W2 = np.zeros((2, n_disj+n_axioms))
