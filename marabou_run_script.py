@@ -26,7 +26,7 @@ def main():
     ]
 
     query_simple = [
-        [[models[4], models[7]], [1, 1]]
+        [[models[4]], [1]]
     ]
 
     tbox_simple = [
