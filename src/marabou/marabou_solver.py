@@ -3,7 +3,7 @@ from maraboupy import MarabouCore
 from maraboupy import MarabouUtils
 from maraboupy.Marabou import createOptions
 import numpy as np
-from utils import saveWitnessImage
+from src.utils import saveWitnessImage
 
 
 '''

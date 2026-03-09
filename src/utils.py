@@ -50,12 +50,14 @@ def getModels(modelType, testFlag=False, even=False):
 
 
 '''
-    Dato un vettore di pixel (784 pixel),
+    Dato un dizionario di variabili con il loro valore, data la lista di variabili di input della rete,
     ricostruisce l'immagine 28x28 e la salva come PNG.
+    Il dizionario è quello costruito da Marabou quando trova un witness per la soddisfacibilità della rete.
 '''
-def saveWitnessImage(witness_array):
+def saveWitnessImage(witness_dict, inputVars):
     filePath = "../witness_images/witness_image.png"
-    img_array = (witness_array * 255).astype(np.uint8).reshape(28, 28)
+    pixels = np.array([witness_dict[var] for var in inputVars])
+    img_array = (pixels * 255).astype(np.uint8).reshape(28, 28)
     img = Image.fromarray(img_array, mode='L')
     img.save(filePath)
     print(f"Immagine salvata in {filePath}")
