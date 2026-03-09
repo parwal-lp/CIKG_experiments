@@ -244,7 +244,7 @@ def solveNetwork(network, finalOutputVars):
         print("Solution found")
         print("output ontologia:",ret[1][finalOutputVars[0]])
         print("output query:", ret[1][finalOutputVars[1]])
-        saveWitnessImage(ret[1])
+        saveWitnessImage(ret[1], network.inputVars[0].flatten())
         print("witness image saved")
     else:
         print("No solution")
