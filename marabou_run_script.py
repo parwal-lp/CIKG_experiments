@@ -64,7 +64,17 @@ def main():
         [[models[4], models[6]], [0, 1]],
         [[models[4], models[7]], [0, 1]],
         [[models[4], models[8]], [0, 1]],
-        [[models[4], models[9]], [0, 1]]
+        [[models[4], models[9]], [0, 1]],
+        [[models[5], models[6]], [0, 1]],
+        [[models[5], models[7]], [0, 1]],
+        [[models[5], models[8]], [0, 1]],
+        [[models[5], models[9]], [0, 1]],
+        [[models[6], models[7]], [0, 1]],
+        [[models[6], models[8]], [0, 1]],
+        [[models[6], models[9]], [0, 1]],
+        [[models[7], models[8]], [0, 1]],
+        [[models[7], models[9]], [0, 1]],
+        [[models[8], models[9]], [0, 1]]
     ]
     setEncodingParameters(tbox_simple, query_simple)
 
