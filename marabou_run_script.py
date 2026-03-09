@@ -24,7 +24,31 @@ def main():
         [[models[9], models[8]], [0, 0]],
         [[models[2], models[1]], [0, 1]]
     ]
-    setEncodingParameters(tbox, query)
+
+    query_simple = [
+        [[models[0], models[1]], [1, 1]]
+    ]
+
+    tbox_simple = [
+        [[models[0], models[1]], [0, 1]],
+        [[models[0], models[2]], [0, 1]],
+        [[models[0], models[3]], [0, 1]],
+        [[models[0], models[4]], [0, 1]],
+        [[models[0], models[5]], [0, 1]],
+        [[models[0], models[6]], [0, 1]],
+        [[models[0], models[7]], [0, 1]],
+        [[models[0], models[8]], [0, 1]],
+        [[models[0], models[9]], [0, 1]],
+        [[models[1], models[2]], [0, 1]],
+        [[models[1], models[3]], [0, 1]],
+        [[models[1], models[4]], [0, 1]],
+        [[models[1], models[5]], [0, 1]],
+        [[models[1], models[6]], [0, 1]],
+        [[models[1], models[7]], [0, 1]],
+        [[models[1], models[8]], [0, 1]],
+        [[models[1], models[9]], [0, 1]],
+    ]
+    setEncodingParameters(tbox_simple, query_simple)
 
     fileName = "mergedClassifiersEncoding"
     onnx_path = ENCODINGS_DIR / f"{fileName}.onnx"
