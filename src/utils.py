@@ -1,3 +1,4 @@
+import os
 import torch
 from src.classifiers.models import *
 from src.classifiers.train import *
@@ -55,7 +56,8 @@ def getModels(modelType, testFlag=False, even=False):
     Il dizionario è quello costruito da Marabou quando trova un witness per la soddisfacibilità della rete.
 '''
 def saveWitnessImage(witness_dict, inputVars):
-    filePath = "../witness_images/witness_image.png"
+    filePath = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "witness_images", "witness_image.png")
+    os.makedirs(os.path.dirname(filePath), exist_ok=True)
     pixels = np.array([witness_dict[var] for var in inputVars])
     img_array = (pixels * 255).astype(np.uint8).reshape(28, 28)
     img = Image.fromarray(img_array, mode='L')
