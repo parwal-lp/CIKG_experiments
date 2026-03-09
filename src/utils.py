@@ -1,6 +1,8 @@
 import torch
 from src.classifiers.models import *
 from src.classifiers.train import *
+from PIL import Image
+import numpy as np
 
 def detectDevice():
     print('Using PyTorch version:', torch.__version__)
@@ -44,3 +46,16 @@ def getModels(modelType, testFlag=False, even=False):
         return models, SLPeven
 
     return models
+
+
+
+'''
+    Dato un vettore di pixel (784 pixel),
+    ricostruisce l'immagine 28x28 e la salva come PNG.
+'''
+def saveWitnessImage(witness_array):
+    filePath = "../witness_images/witness_image.png"
+    img_array = (witness_array * 255).astype(np.uint8).reshape(28, 28)
+    img = Image.fromarray(img_array, mode='L')
+    img.save(filePath)
+    print(f"Immagine salvata in {filePath}")

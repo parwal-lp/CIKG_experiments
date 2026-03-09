@@ -3,6 +3,8 @@ from maraboupy import MarabouCore
 from maraboupy import MarabouUtils
 from maraboupy.Marabou import createOptions
 import numpy as np
+from utils import saveWitnessImage
+
 
 '''
     dato NNET file chiama il solver di Marabou su quella rete
@@ -242,5 +244,7 @@ def solveNetwork(network, finalOutputVars):
         print("Solution found")
         print("output ontologia:",ret[1][finalOutputVars[0]])
         print("output query:", ret[1][finalOutputVars[1]])
+        saveWitnessImage(ret[1])
+        print("witness image saved")
     else:
         print("No solution")
